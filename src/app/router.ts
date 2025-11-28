@@ -29,7 +29,7 @@ const router = createRouter({
   ]
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach((to, _from, next) => {
   const languageStore = useLanguageStore()
 
   if (!languageStore.hasTargetLanguage && to.path !== '/select-language') {

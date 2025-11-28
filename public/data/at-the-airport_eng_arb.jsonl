@@ -29,8 +29,11 @@
 {"key": "eng:the gate", "content": "the gate", "language": "eng", "transcriptions": [], "contains": [], "translations": ["arb:البوابة"], "notes": []}
 {"key": "eng:of", "content": "of", "language": "eng", "transcriptions": [], "contains": [], "translations": ["arb:تبَع"], "notes": []}
 {"key": "eng:plane", "content": "plane", "language": "eng", "transcriptions": [], "contains": [], "translations": ["arb:طيّارة"], "notes": []}
+{"key": "eng:bathroom", "content": "bathroom", "language": "eng", "transcriptions": [], "contains": [], "translations": ["arb:حمّام"], "notes": []}
 {"key": "arb:وين الحمّام؟", "content": "وين الحمّام؟", "language": "arb", "transcriptions": [], "contains": [], "translations": [], "notes": []}
 {"key": "arb:وين بلاقي الحمّام؟", "content": "وين بلاقي الحمّام؟", "language": "arb", "transcriptions": [], "contains": [], "translations": [], "notes": []}
+{"key": "eng:bus", "content": "bus", "language": "eng", "transcriptions": [], "contains": [], "translations": ["arb:باص"], "notes": []}
+{"key": "eng:bus stop", "content": "bus stop", "language": "eng", "transcriptions": [], "contains": [], "translations": ["arb:موقف الباص"], "notes": []}
 {"key": "arb:وين الموقف؟", "content": "وين الموقف؟", "language": "arb", "transcriptions": [], "contains": [], "translations": [], "notes": []}
 {"key": "arb:وين بلاقي موقف الباص؟", "content": "وين بلاقي موقف الباص؟", "language": "arb", "transcriptions": [], "contains": [], "translations": [], "notes": []}
 {"key": "arb:وين السوبرماركت؟", "content": "وين السوبرماركت؟", "language": "arb", "transcriptions": [], "contains": [], "translations": [], "notes": []}
@@ -38,3 +41,6 @@
 {"key": "eng:Where do I find ___?", "content": "Where do I find ___?", "language": "eng", "transcriptions": [], "contains": [], "translations": ["arb:وين بلاقي ___؟"], "notes": []}
 {"key": "eng:Where would ___ be?", "content": "Where would ___ be?", "language": "eng", "transcriptions": [], "contains": [], "translations": ["arb:وين بيكون ___؟"], "notes": []}
 {"key": "eng:Where’s the way to ___?", "content": "Where’s the way to ___?", "language": "eng", "transcriptions": [], "contains": [], "translations": ["arb:وين الطريق لــ ___؟"], "notes": []}
+{"key": "arb:حمّام", "content": "حمّام", "language": "arb", "transcriptions": [], "contains": [], "translations": ["eng:bathroom"], "notes": []}
+{"key": "arb:باص", "content": "باص", "language": "arb", "transcriptions": [], "contains": [], "translations": ["eng:bus"], "notes": []}
+{"key": "arb:موقف الباص", "content": "موقف الباص", "language": "arb", "transcriptions": [], "contains": [], "translations": ["eng:bus stop"], "notes": []}
