@@ -3,8 +3,8 @@ import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useLanguageStore } from '@/entities/language'
 import { parseJsonl } from '@/dumb/jsonl-utils'
-import { extractUnderstandingChallenges } from '@/features/understanding-challenges/extract-challenges'
-import { extractCollections } from '@/features/collections/extract-collections'
+import { extractUnderstandingChallenges } from '@/features/extract-understanding-challenges/extract-understanding-challenges'
+import { extractCollections } from '@/features/extract-collections/extract-collections'
 import type { Gloss } from '@/dumb/types'
 
 const route = useRoute()

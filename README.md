@@ -1,5 +1,39 @@
-# Vue 3 + TypeScript + Vite
+# SBLL Frontend
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+Language learning app built with Vue 3, TypeScript, and Vite.
 
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
+## Tech Stack
+
+- Vue 3 with `<script setup>` SFCs
+- TypeScript
+- Vite
+- Tailwind CSS + DaisyUI
+- Vue Router
+- Pinia (state management)
+- ESLint 9 (flat config)
+
+## Development
+
+```bash
+# Install dependencies
+npm install
+
+# Run dev server
+npm run dev
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run preview
+
+# Lint code
+npm run lint
+
+# Fix linting issues
+npm run lint:fix
+```
+
+## Architecture
+
+See also [the developer guidelines](developer-guidelines.md) for detailed architecture and design guidelines.
