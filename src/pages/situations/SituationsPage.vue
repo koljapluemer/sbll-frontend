@@ -38,6 +38,10 @@ onMounted(async () => {
 const goToDebugPage = (situationId: string) => {
   router.push(`/situations/${situationId}/debug`)
 }
+
+const goToLessonPage = (situationId: string) => {
+  router.push(`/situations/${situationId}/lesson`)
+}
 </script>
 
 <template>
@@ -68,12 +72,22 @@ const goToDebugPage = (situationId: string) => {
         <div class="card-body">
           <h2 class="card-title">{{ situation.native_description }}</h2>
           <p class="text-light">{{ situation.target_description }}</p>
-          <button
-            @click="goToDebugPage(situation.id)"
-            class="btn btn-sm mt-2"
-          >
-            Debug
-          </button>
+          <div class="flex gap-2 mt-2">
+            <button
+              class="btn btn-sm btn-primary"
+              type="button"
+              @click="goToLessonPage(situation.id)"
+            >
+              Practice
+            </button>
+            <button
+              class="btn btn-sm"
+              type="button"
+              @click="goToDebugPage(situation.id)"
+            >
+              Debug
+            </button>
+          </div>
         </div>
       </div>
     </div>

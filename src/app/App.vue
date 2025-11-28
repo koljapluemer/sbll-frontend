@@ -5,7 +5,7 @@ import LanguageFooter from '@/features/language-footer/LanguageFooter.vue'
 
 <template>
   <div class="flex flex-col min-h-screen">
-    <main class="flex-1 container mx-auto p-4">
+    <main class="flex-1 container mx-auto p-4 items-center justify-center flex flex-col">
       <RouterView />
     </main>
 
