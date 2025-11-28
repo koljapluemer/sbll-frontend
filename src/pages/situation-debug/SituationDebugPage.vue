@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { useLanguageStore } from '@/entities/language'
 import { parseJsonl } from '@/dumb/jsonl-utils'
 import { extractUnderstandingChallenges } from '@/features/understanding-challenges/extract-challenges'
+import { extractCollections } from '@/features/collections/extract-collections'
 import type { Gloss } from '@/dumb/types'
 
 const route = useRoute()
@@ -19,6 +20,10 @@ const glossFilePath = computed(() => {
   const native = languageStore.nativeIso
   return `/data/${situationId.value}_${target}_${native}.jsonl`
 })
+
+const collections = computed(() =>
+  extractCollections(glosses.value)
+)
 
 const challenges = computed(() =>
   extractUnderstandingChallenges(glosses.value, languageStore.targetIso)
@@ -49,6 +54,25 @@ onMounted(async () => {
     </div>
 
     <div v-else>
+      <h2 class="text-2xl font-bold mb-4">Collections</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        <div v-for="collection in collections" :key="collection.key" class="card shadow">
+          <div class="card-body">
+            <h3 class="card-title">{{ collection.content }}</h3>
+            <div class="overflow-x-auto">
+              <table class="table table-xs">
+                <tbody>
+                  <tr v-for="containedKey in collection.contains" :key="containedKey">
+                    <td>{{ containedKey }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <h2 class="text-2xl font-bold mb-4">Understanding Challenges</h2>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
