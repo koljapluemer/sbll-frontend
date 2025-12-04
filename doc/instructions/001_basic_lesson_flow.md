@@ -2,3 +2,5 @@
 - Note: A situation has as data source the following two files, matching in name, differing in ending: `public/data/situations/eng/arb/at the airport.json`+`public/data/target_languages.jsonl`
 
 For now, let's do a proof of concept: Allow clicking "Practice" on `src/pages/situations/SituationsPage.vue` and simply show some core data about the gloss matching a randomly chosen `procedural-paraphrase-expression-goals` entry's `finalChallenge`. Have a "done" button leading back to the situations page.
+
+Parse gloss with [this schema](gloss.schema.json).
