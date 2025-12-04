@@ -55,6 +55,13 @@ const hasSituations = computed(() => situations.value.length > 0)
         <h2 class="text-xl font-semibold">
           {{ situation.name }}
         </h2>
+
+        <RouterLink
+          :to="{ name: 'situation-practice', params: { situationId: situation.id } }"
+          class="btn btn-primary btn-sm mt-3 inline-flex items-center gap-2"
+        >
+          Practice
+        </RouterLink>
       </div>
     </div>
   </div>
