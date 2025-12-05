@@ -1,15 +1,10 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-
-type Gloss = {
-  ref?: string
-  content: string
-  language?: string
-}
+import type { NormalizedGloss } from '@/entities/gloss/types'
 
 const props = defineProps<{
-  nativeGloss: Gloss
-  translationExamples: Gloss[]
+  nativeGloss: NormalizedGloss
+  translationExamples: NormalizedGloss[]
   targetLanguage: string
 }>()
 

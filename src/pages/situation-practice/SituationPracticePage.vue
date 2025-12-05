@@ -1,38 +1,38 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { parseJsonl } from '@/dumb/jsonl-utils'
+import {
+  buildGlossIndex,
+  collectGlossTranslations,
+  dedupeGlossRefs,
+  loadGlossList,
+  resolveGlossRef
+} from '@/entities/gloss/repository'
+import type { GlossIndex, GlossRef, NormalizedGloss } from '@/entities/gloss/types'
 import { useLanguageStore } from '@/entities/language'
 import FinalChallengeTryToExpress from './tasks/native-to-target/FinalChallengeTryToExpress.vue'
 import MemorizeWithTimer from './tasks/native-to-target/MemorizeWithTimer.vue'
 import NativeToTargetSR from './tasks/native-to-target/NativeToTargetSR.vue'
 
 type ProceduralGoal = {
-  finalChallenge: string
-  needToBeLearned?: string[]
-}
-
-type GlossEntry = {
-  ref?: string
-  content: string
-  language?: string
-  translations?: string[]
+  finalChallenge: GlossRef
+  needToBeLearned?: GlossRef[]
 }
 
 const route = useRoute()
 const router = useRouter()
 const languageStore = useLanguageStore()
 
-const glossesToIntroduce = ref<string[]>([])
-const glossesToPractice = ref<string[]>([])
-const lastGlossRef = ref<string | null>(null)
-const currentGlossRef = ref<string | null>(null)
+const glossesToIntroduce = ref<GlossRef[]>([])
+const glossesToPractice = ref<GlossRef[]>([])
+const lastGlossRef = ref<GlossRef | null>(null)
+const currentGlossRef = ref<GlossRef | null>(null)
 const currentMode = ref<'introduce' | 'practice' | 'final' | null>(null)
-const currentTranslationExamples = ref<GlossEntry[]>([])
-const glossByRef = ref<Record<string, GlossEntry>>({})
+const currentTranslationExamples = ref<NormalizedGloss[]>([])
+const glossByRef = ref<GlossIndex>({})
 
-const finalChallengeGloss = ref<GlossEntry | null>(null)
-const finalTranslationExamples = ref<GlossEntry[]>([])
+const finalChallengeGloss = ref<NormalizedGloss | null>(null)
+const finalTranslationExamples = ref<NormalizedGloss[]>([])
 const isLoading = ref(true)
 const error = ref<string | null>(null)
 
@@ -58,25 +58,16 @@ const resetState = () => {
   finalTranslationExamples.value = []
 }
 
-const resolveGloss = (ref: string | null | undefined): GlossEntry | null => {
-  if (!ref) return null
-  return glossByRef.value[ref] ?? null
-}
+const resolveGloss = (ref: GlossRef | null | undefined) => resolveGlossRef(ref, glossByRef.value)
+const collectTranslations = (gloss: NormalizedGloss | null) => collectGlossTranslations(gloss, glossByRef.value)
 
-const collectTranslations = (gloss: GlossEntry | null): GlossEntry[] => {
-  if (!gloss || !Array.isArray(gloss.translations)) return []
-  return gloss.translations
-    .map(translationRef => resolveGloss(translationRef))
-    .filter((entry): entry is GlossEntry => Boolean(entry))
-}
+const dedupe = (items: GlossRef[]) => dedupeGlossRefs(items)
 
-const dedupe = (items: string[]) => Array.from(new Set(items))
-
-const chooseNextTask = (): { mode: 'introduce' | 'practice'; ref: string } | null => {
+const chooseNextTask = (): { mode: 'introduce' | 'practice'; ref: GlossRef } | null => {
   const introList = glossesToIntroduce.value
   const practiceList = glossesToPractice.value
 
-  const pools: Array<{ mode: 'introduce' | 'practice'; list: string[] }> = []
+  const pools: Array<{ mode: 'introduce' | 'practice'; list: GlossRef[] }> = []
   if (introList.length) pools.push({ mode: 'introduce', list: introList })
   if (practiceList.length) pools.push({ mode: 'practice', list: practiceList })
 
@@ -176,11 +167,8 @@ const loadPracticeData = async () => {
     const randomGoal = goals[Math.floor(Math.random() * goals.length)]
     if (!randomGoal) throw new Error('Unable to pick a practice goal.')
 
-    const glosses = await parseJsonl<GlossEntry>(`${dataBasePath.value}.jsonl`)
-    glossByRef.value = glosses.reduce<Record<string, GlossEntry>>((acc, entry) => {
-      if (entry.ref) acc[entry.ref] = entry
-      return acc
-    }, {})
+    const glosses = await loadGlossList(`${dataBasePath.value}.jsonl`)
+    glossByRef.value = buildGlossIndex(glosses)
 
     const challengeGloss = resolveGloss(randomGoal.finalChallenge)
     if (!challengeGloss) throw new Error('No gloss found for the selected challenge.')
