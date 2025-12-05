@@ -1,0 +1,3 @@
+[submodule "public/data/situations"]
+	path = public/data/situations
+	url = git@github.com:koljapluemer/sbll-data.git
