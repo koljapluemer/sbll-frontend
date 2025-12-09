@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, toRaw, watch } from 'vue'
 import { pickRandom } from '@/dumb/random'
 import type { GlossIndex, GlossRef } from '@/entities/gloss/types'
 import type { StatefulGloss } from '../types'
@@ -10,6 +10,9 @@ const doneStates: LearningState[] = ['practicing', 'done']
 export const useQueue = (glossRefs: GlossRef[], repo: GlossIndex) => {
   const stateMap = ref<Record<GlossRef, LearningState>>({})
   const lastGlossRef = ref<GlossRef | null>(null)
+  const logState = (reason: string) => {
+    console.info('[useQueue] State map change:', reason, toRaw(stateMap.value))
+  }
 
   const isKnownGloss = (ref: GlossRef) => Boolean(repo[ref])
 
@@ -26,16 +29,16 @@ export const useQueue = (glossRefs: GlossRef[], repo: GlossIndex) => {
     })
   }
 
-const unblockGlosses = () => {
-  Object.entries(stateMap.value)
-    .filter(([, state]) => state === 'blocked')
-    .forEach(([candidateRef]) => {
-      if (!hasBlockingParts(candidateRef)) {
-        stateMap.value[candidateRef] = 'novel'
-        console.info('[useQueue] Unblocked gloss', candidateRef)
-      }
-    })
-}
+  const unblockGlosses = () => {
+    Object.entries(stateMap.value)
+      .filter(([, state]) => state === 'blocked')
+      .forEach(([candidateRef]) => {
+        if (!hasBlockingParts(candidateRef)) {
+          stateMap.value[candidateRef] = 'novel'
+          console.info('[useQueue] Unblocked gloss', candidateRef)
+        }
+      })
+  }
 
   const initialize = () => {
     const initialStates: Record<GlossRef, LearningState> = {}
@@ -52,8 +55,10 @@ const unblockGlosses = () => {
 
     stateMap.value = initialStates
     lastGlossRef.value = null
-    console.info('[useQueue] Initialized state map', stateMap.value)
+    logState('initialize')
   }
+
+  watch(stateMap, () => logState('stateMap updated'), { deep: true })
 
   const getDueGloss = (): StatefulGloss | undefined => {
     const candidates = Object.entries(stateMap.value)
