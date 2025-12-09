@@ -26,15 +26,16 @@ export const useQueue = (glossRefs: GlossRef[], repo: GlossIndex) => {
     })
   }
 
-  const unblockGlosses = () => {
-    Object.entries(stateMap.value)
-      .filter(([, state]) => state === 'blocked')
-      .forEach(([candidateRef]) => {
-        if (!hasBlockingParts(candidateRef)) {
-          stateMap.value[candidateRef] = 'novel'
-        }
-      })
-  }
+const unblockGlosses = () => {
+  Object.entries(stateMap.value)
+    .filter(([, state]) => state === 'blocked')
+    .forEach(([candidateRef]) => {
+      if (!hasBlockingParts(candidateRef)) {
+        stateMap.value[candidateRef] = 'novel'
+        console.info('[useQueue] Unblocked gloss', candidateRef)
+      }
+    })
+}
 
   const initialize = () => {
     const initialStates: Record<GlossRef, LearningState> = {}
@@ -51,6 +52,7 @@ export const useQueue = (glossRefs: GlossRef[], repo: GlossIndex) => {
 
     stateMap.value = initialStates
     lastGlossRef.value = null
+    console.info('[useQueue] Initialized state map', stateMap.value)
   }
 
   const getDueGloss = (): StatefulGloss | undefined => {
@@ -65,6 +67,7 @@ export const useQueue = (glossRefs: GlossRef[], repo: GlossIndex) => {
     if (!chosen) return undefined
 
     lastGlossRef.value = chosen.ref
+    console.info('[useQueue] getDueGloss picked', chosen.ref, 'state:', chosen.state)
     return chosen as StatefulGloss
   }
 
@@ -74,14 +77,18 @@ export const useQueue = (glossRefs: GlossRef[], repo: GlossIndex) => {
 
     if (currentState === 'novel') {
       stateMap.value[glossRef] = 'practicing'
+      console.info('[useQueue] State change', glossRef, 'novel -> practicing')
       unblockGlosses()
       return
     }
 
     if (currentState === 'practicing' && rememberedCorrectly) {
       stateMap.value[glossRef] = 'done'
+      console.info('[useQueue] State change', glossRef, 'practicing -> done')
       return
     }
+
+    console.info('[useQueue] State unchanged', glossRef, currentState, 'rememberedCorrectly:', rememberedCorrectly)
   }
 
   const setGlossInvalid = (glossRef: GlossRef) => {
