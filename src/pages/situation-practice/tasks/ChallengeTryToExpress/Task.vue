@@ -24,12 +24,9 @@ const cardRows = computed<IndexCardRow[]>(() => {
     return [{ type: 'text', text: props.task.gloss.content, size: 'auto' }]
   }
 
-  const translationRows = props.task.translations.flatMap((translation, index) => {
-    const rows = []
-    
-    rows.push({ type: 'text', text: translation.content, size: 'auto' } as IndexCardRow)
-    return rows
-  })
+  const translationRows = props.task.translations.flatMap(translation => ([
+    { type: 'text', text: translation.content, size: 'auto' } as IndexCardRow
+  ]))
 
   return [
     { type: 'text', text: props.task.gloss.content, size: 'auto' },
@@ -47,27 +44,34 @@ const finish = () => emit('taskDone', true)
 </script>
 
 <template>
-  <div class="flex flex-col gap-4 w-full max-w-xl">
-    <ShowInstruction
-      v-if="phase === 'prompt'"
-      content="try to express this"
-    />
+  <div class="w-full max-w-xl flex flex-col min-h-[70vh] gap-4">
+    <div>
+      <ShowInstruction
+        v-if="phase === 'prompt'"
+        content="try to express this"
+      />
+    </div>
 
-    <IndexCard
-      :rows="cardRows"
-      :flipped="flipped"
-    />
+    <div class="flex-1 flex flex-col gap-4 items-center overflow-auto">
+      <IndexCard
+        :rows="cardRows"
+        :flipped="flipped"
+        fill
+      />
+    </div>
 
-    <InteractionButtonRow
-      v-if="phase === 'prompt'"
-      :icons="['RefreshCw']"
-      @select="flip"
-    />
+    <div class="mt-auto flex justify-center">
+      <InteractionButtonRow
+        v-if="phase === 'prompt'"
+        :icons="['RefreshCw']"
+        @select="flip"
+      />
 
-    <InteractionButtonRow
-      v-else
-      :icons="['CheckCheck']"
-      @select="finish"
-    />
+      <InteractionButtonRow
+        v-else
+        :icons="['CheckCheck']"
+        @select="finish"
+      />
+    </div>
   </div>
 </template>

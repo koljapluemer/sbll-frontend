@@ -25,12 +25,9 @@ const questionCard = computed<IndexCardRow[]>(() => [
 ])
 
 const finalCard = computed<IndexCardRow[]>(() => {
-  const translationRows = props.task.translations.flatMap((translation, index) => {
-    const rows = []
-    
-    rows.push({ type: 'text', text: translation.content, size: 'auto' } as IndexCardRow)
-    return rows
-  })
+  const translationRows = props.task.translations.map(translation => (
+    { type: 'text', text: translation.content, size: 'auto' } as IndexCardRow
+  ))
 
   return [
     { type: 'text', text: props.task.gloss.content, size: 'auto' },
@@ -49,43 +46,50 @@ const finish = () => emit('taskDone')
 </script>
 
 <template>
-  <div class="flex flex-col gap-4 w-full max-w-3xl">
-    <ShowInstruction
-      v-if="phase === 'question'"
-      content="What do you think this means?"
-    />
-
-    <IndexCard
-      :rows="phase === 'question' ? questionCard : finalCard"
-      :flipped="mainFlipped"
-    />
-
-    <div
-      v-if="phase === 'question'"
-      class="grid gap-3"
-    >
-      <IndexCard
-        v-for="pair in task.examples"
-        :key="pair.example.ref ?? pair.example.content"
-        :rows="[
-          { type: 'text', text: pair.translation.content, size: 'normal' },
-          { type: 'divider' },
-          { type: 'text', text: pair.example.content, size: 'normal' }
-        ]"
-        :swiped="swipeExamples"
+  <div class="w-full max-w-3xl flex flex-col min-h-[70vh] gap-4">
+    <div>
+      <ShowInstruction
+        v-if="phase === 'question'"
+        content="What do you think this means?"
       />
     </div>
 
-    <InteractionButtonRow
-      v-if="phase === 'question'"
-      :icons="['RefreshCw']"
-      @select="flip"
-    />
+    <div class="flex-1 flex flex-col gap-4 overflow-auto">
+      <IndexCard
+        :rows="phase === 'question' ? questionCard : finalCard"
+        :flipped="mainFlipped"
+        fill
+      />
 
-    <InteractionButtonRow
-      v-else
-      :icons="['Check']"
-      @select="finish"
-    />
+      <div
+        v-if="phase === 'question'"
+        class="grid gap-3"
+      >
+        <IndexCard
+          v-for="pair in task.examples"
+          :key="pair.example.ref ?? pair.example.content"
+          :rows="[
+            { type: 'text', text: pair.translation.content, size: 'normal' },
+            { type: 'divider' },
+            { type: 'text', text: pair.example.content, size: 'normal' }
+          ]"
+          :swiped="swipeExamples"
+        />
+      </div>
+    </div>
+
+    <div class="mt-auto flex justify-center">
+      <InteractionButtonRow
+        v-if="phase === 'question'"
+        :icons="['RefreshCw']"
+        @select="flip"
+      />
+
+      <InteractionButtonRow
+        v-else
+        :icons="['Check']"
+        @select="finish"
+      />
+    </div>
   </div>
 </template>

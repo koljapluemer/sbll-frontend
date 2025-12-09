@@ -61,12 +61,9 @@ const cardRows = computed<IndexCardRow[]>(() => {
     ]
   }
 
-  const translationRows = props.task.translations.flatMap((translation, index) => {
-    const rows = []
-    
-    rows.push({ type: 'text', text: translation.content, size: 'auto' } as IndexCardRow)
-    return rows
-  })
+  const translationRows = props.task.translations.map(translation => (
+    { type: 'text', text: translation.content, size: 'auto' } as IndexCardRow
+  ))
 
   return [
     { type: 'text', text: props.task.gloss.content, size: 'auto' },
@@ -81,41 +78,48 @@ onBeforeUnmount(stopTimer)
 </script>
 
 <template>
-  <div class="flex flex-col gap-4 w-full max-w-xl">
-    <ShowInstruction
-      v-if="phase === 'memorize'"
-      content="Try to memorize this"
-    />
-    <ShowInstruction
-      v-else-if="phase === 'recall'"
-      content="Do you remember how to express this?"
-    />
-
-    <IndexCard
-      :rows="cardRows"
-      :flipped="flipped"
-    />
-
-    <div
-      v-if="phase === 'memorize'"
-      class="w-full bg-base-200 h-2 rounded"
-    >
-      <div
-        class="h-full bg-primary transition-[width] duration-100"
-        :style="{ width: progressWidth }"
+  <div class="w-full max-w-xl flex flex-col min-h-[70vh] gap-4">
+    <div>
+      <ShowInstruction
+        v-if="phase === 'memorize'"
+        content="Try to memorize this"
+      />
+      <ShowInstruction
+        v-else-if="phase === 'recall'"
+        content="Do you remember how to express this?"
       />
     </div>
 
-    <InteractionButtonRow
-      v-if="phase === 'recall'"
-      :icons="['RefreshCw']"
-      @select="handleFlipReveal"
-    />
+    <div class="flex-1 flex flex-col gap-4 items-center overflow-auto w-full">
+      <IndexCard
+        :rows="cardRows"
+        :flipped="flipped"
+        fill
+      />
 
-    <InteractionButtonRow
-      v-else-if="phase === 'reveal'"
-      :icons="['Check']"
-      @select="finish"
-    />
+      <div
+        v-if="phase === 'memorize'"
+        class="w-full bg-base-200 h-2 rounded"
+      >
+        <div
+          class="h-full bg-primary transition-[width] duration-100"
+          :style="{ width: progressWidth }"
+        />
+      </div>
+    </div>
+
+    <div class="mt-auto flex justify-center">
+      <InteractionButtonRow
+        v-if="phase === 'recall'"
+        :icons="['RefreshCw']"
+        @select="handleFlipReveal"
+      />
+
+      <InteractionButtonRow
+        v-else-if="phase === 'reveal'"
+        :icons="['Check']"
+        @select="finish"
+      />
+    </div>
   </div>
 </template>

@@ -17,7 +17,7 @@ const handleClick = (icon: string) => emit('select', icon)
     <button
       v-for="icon in props.icons"
       :key="icon"
-      class="btn btn-circle btn-ghost"
+      class="btn btn-circle btn-outline btn-xl"
       type="button"
       @click="handleClick(icon)"
     >

@@ -44,20 +44,29 @@ const confirm = () => {
 </script>
 
 <template>
-  <div class="flex flex-col gap-4 w-full max-w-xl">
-    <ShowInstruction
-      content="Form a sentence that includes this word"
-    />
+  <div class="w-full max-w-xl flex flex-col min-h-[70vh] gap-4">
+    <div>
+      <ShowInstruction
+        content="Form a sentence that includes this word"
+      />
+    </div>
 
-    <IndexCard :rows="cardRows" />
+    <div class="flex-1 flex flex-col gap-4 overflow-auto items-center">
+      <IndexCard
+        :rows="cardRows"
+        fill
+      />
+    </div>
 
-    <button
-      class="btn btn-primary"
-      type="button"
-      @click="openModal"
-    >
-      Start typing
-    </button>
+    <div class="mt-auto flex justify-center">
+      <button
+        class="btn btn-primary"
+        type="button"
+        @click="openModal"
+      >
+        Start typing
+      </button>
+    </div>
 
     <dialog
       v-if="isModalOpen"

@@ -25,12 +25,9 @@ const exampleQuestionRows = computed<IndexCardRow[]>(() => [
 ])
 
 const exampleAnswerRows = computed<IndexCardRow[]>(() => {
-  const translationRows = props.task.exampleTranslations.flatMap((translation, index) => {
-    const rows = []
-    
-    rows.push({ type: 'text', text: translation.content, size: 'auto' } as IndexCardRow)
-    return rows
-  })
+  const translationRows = props.task.exampleTranslations.map(translation => (
+    { type: 'text', text: translation.content, size: 'auto' } as IndexCardRow
+  ))
 
   return [
     { type: 'text', text: props.task.example.content, size: 'auto' },
@@ -40,12 +37,9 @@ const exampleAnswerRows = computed<IndexCardRow[]>(() => {
 })
 
 const focusCardRows = computed<IndexCardRow[]>(() => {
-  const translationRows = props.task.focusTranslations.flatMap((translation, index) => {
-    const rows = []
-    
-    rows.push({ type: 'text', text: translation.content, size: 'auto' } as IndexCardRow)
-    return rows
-  })
+  const translationRows = props.task.focusTranslations.map(translation => (
+    { type: 'text', text: translation.content, size: 'auto' } as IndexCardRow
+  ))
 
   return [
     { type: 'text', text: props.task.focusGloss.content, size: 'auto' },
@@ -78,45 +72,55 @@ const buildPartRows = (part: UnderstandSentenceAroundTargetGlossTask['otherParts
 </script>
 
 <template>
-  <div class="flex flex-col gap-4 w-full max-w-3xl">
-    <ShowInstruction
-      v-if="phase === 'question'"
-      content="Try to understand the meaning of this sentence"
-    />
-
-    <IndexCard
-      :rows="phase === 'question' ? exampleQuestionRows : exampleAnswerRows"
-      :flipped="mainFlipped"
-    />
-
-    <div
-      v-if="phase === 'question'"
-      class="grid gap-3"
-    >
-      <IndexCard
-        v-for="part in task.otherParts"
-        :key="part.gloss.ref ?? part.gloss.content"
-        :rows="buildPartRows(part)"
-        :swiped="swipeParts"
+  <div class="w-full max-w-3xl flex flex-col min-h-[70vh] gap-4">
+    <div>
+      <ShowInstruction
+        v-if="phase === 'question'"
+        content="Try to understand the meaning of this sentence"
       />
     </div>
 
-    <InteractionButtonRow
-      v-if="phase === 'question'"
-      :icons="['RefreshCw']"
-      @select="flip"
-    />
-
-    <div
-      v-else
-      class="flex flex-col gap-3"
-    >
-      <IndexCard :rows="focusCardRows" />
-
-      <InteractionButtonRow
-        :icons="['Check']"
-        @select="finish"
+    <div class="flex-1 flex flex-col gap-4 overflow-auto">
+      <IndexCard
+        :rows="phase === 'question' ? exampleQuestionRows : exampleAnswerRows"
+        :flipped="mainFlipped"
+        fill
       />
+
+      <div
+        v-if="phase === 'question'"
+        class="grid gap-3"
+      >
+        <IndexCard
+          v-for="part in task.otherParts"
+          :key="part.gloss.ref ?? part.gloss.content"
+          :rows="buildPartRows(part)"
+          :swiped="swipeParts"
+        />
+      </div>
+    </div>
+
+    <div class="mt-auto flex justify-center">
+      <InteractionButtonRow
+        v-if="phase === 'question'"
+        :icons="['RefreshCw']"
+        @select="flip"
+      />
+
+      <div
+        v-else
+        class="flex flex-col gap-3 w-full items-center"
+      >
+        <IndexCard
+          :rows="focusCardRows"
+          fill
+        />
+
+        <InteractionButtonRow
+          :icons="['Check']"
+          @select="finish"
+        />
+      </div>
     </div>
   </div>
 </template>

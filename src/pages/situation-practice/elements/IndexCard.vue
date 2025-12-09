@@ -6,13 +6,16 @@ const props = defineProps<{
   rows: IndexCardRow[]
   flipped?: boolean
   swiped?: boolean
+  fill?: boolean
 }>()
 
 const cardClasses = computed(() => [
   'card',
   'shadow',
   'bg-white',
-  'text-gray-800',
+  'text-gray-700',
+  'w-full',
+  props.fill && 'h-full',
   props.flipped && 'card-flipped',
   props.swiped && 'card-swiped'
 ])
@@ -35,14 +38,14 @@ const textClass = (row: IndexCardRow) => {
 
 <template>
   <div :class="cardClasses">
-    <div class="card-body gap-4 flex items-center">
+    <div class="card-body gap-4 grid place-items-center text-center mb-8">
       <template
         v-for="(row, index) in rows"
         :key="index"
       >
         <div
           v-if="row.type === 'divider'"
-          class="divider my-0 divider-neutral"
+          class="w-full border-b-2 border-dotted"
         />
         <p
           v-else

@@ -24,12 +24,9 @@ const cardRows = computed<IndexCardRow[]>(() => {
     return [{ type: 'text', text: props.task.gloss.content, size: 'auto' }]
   }
 
-  const translationRows = props.task.translations.flatMap((translation, index) => {
-    const rows = []
-    
-    rows.push({ type: 'text', text: translation.content, size: 'auto' } as IndexCardRow)
-    return rows
-  })
+  const translationRows = props.task.translations.map(translation => (
+    { type: 'text', text: translation.content, size: 'auto' } as IndexCardRow
+  ))
 
   return [
     { type: 'text', text: props.task.gloss.content, size: 'auto' },
@@ -47,27 +44,34 @@ const handleDone = (icon: string) => emit('taskDone', icon === 'Check')
 </script>
 
 <template>
-  <div class="flex flex-col gap-4 w-full max-w-xl">
-    <ShowInstruction
-      v-if="phase === 'prompt'"
-      content="Do you remember how to express this?"
-    />
+  <div class="w-full max-w-xl flex flex-col min-h-[70vh] gap-4">
+    <div>
+      <ShowInstruction
+        v-if="phase === 'prompt'"
+        content="Do you remember how to express this?"
+      />
+    </div>
 
-    <IndexCard
-      :rows="cardRows"
-      :flipped="flipped"
-    />
+    <div class="flex-1 flex flex-col gap-4 items-center overflow-auto">
+      <IndexCard
+        :rows="cardRows"
+        :flipped="flipped"
+        fill
+      />
+    </div>
 
-    <InteractionButtonRow
-      v-if="phase === 'prompt'"
-      :icons="['RefreshCw']"
-      @select="handleFlip"
-    />
+    <div class="mt-auto flex justify-center">
+      <InteractionButtonRow
+        v-if="phase === 'prompt'"
+        :icons="['RefreshCw']"
+        @select="handleFlip"
+      />
 
-    <InteractionButtonRow
-      v-else
-      :icons="['Check', 'X']"
-      @select="handleDone"
-    />
+      <InteractionButtonRow
+        v-else
+        :icons="['Check', 'X']"
+        @select="handleDone"
+      />
+    </div>
   </div>
 </template>
