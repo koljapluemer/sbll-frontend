@@ -11,6 +11,8 @@ const props = defineProps<{
 const cardClasses = computed(() => [
   'card',
   'shadow',
+  'bg-white',
+  'text-gray-800',
   props.flipped && 'card-flipped',
   props.swiped && 'card-swiped'
 ])
@@ -33,14 +35,14 @@ const textClass = (row: IndexCardRow) => {
 
 <template>
   <div :class="cardClasses">
-    <div class="card-body gap-3">
+    <div class="card-body gap-4 flex items-center">
       <template
         v-for="(row, index) in rows"
         :key="index"
       >
         <div
           v-if="row.type === 'divider'"
-          class="divider my-0"
+          class="divider my-0 divider-neutral"
         />
         <p
           v-else

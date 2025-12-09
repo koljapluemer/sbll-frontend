@@ -63,7 +63,7 @@ const cardRows = computed<IndexCardRow[]>(() => {
 
   const translationRows = props.task.translations.flatMap((translation, index) => {
     const rows = []
-    if (index > 0) rows.push({ type: 'divider' } as IndexCardRow)
+    
     rows.push({ type: 'text', text: translation.content, size: 'auto' } as IndexCardRow)
     return rows
   })

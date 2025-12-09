@@ -100,10 +100,6 @@ watch([() => route.params.situationId, () => languageStore.targetIso], loadData,
 
 <template>
   <div class="w-full">
-    <h1 class="text-3xl font-bold mb-4">
-      Practice
-    </h1>
-
     <div
       v-if="isLoading"
       class="flex justify-center py-6"
