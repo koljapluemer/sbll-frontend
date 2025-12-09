@@ -33,9 +33,14 @@ const hasSituations = computed(() => situations.value.length > 0)
 
 <template>
   <div>
-    <h1 class="text-3xl font-bold mb-6">Situations</h1>
+    <h1 class="text-3xl font-bold mb-6">
+      Situations
+    </h1>
 
-    <div v-if="!languageStore.targetIso" class="alert alert-warning">
+    <div
+      v-if="!languageStore.targetIso"
+      class="alert alert-warning"
+    >
       Please select a target language first.
     </div>
 
@@ -46,7 +51,10 @@ const hasSituations = computed(() => situations.value.length > 0)
       No situations found for {{ languageStore.nativeIso }} → {{ languageStore.targetIso }}.
     </div>
 
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div
+      v-else
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+    >
       <div
         v-for="situation in situations"
         :key="situation.id"

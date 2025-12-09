@@ -15,9 +15,18 @@ const textClassMap: Record<'SmallText' | 'NormalText' | 'LargeText', string> = {
 <template>
   <div class="card shadow">
     <div class="card-body gap-3">
-      <template v-for="(element, index) in elements" :key="index">
-        <div v-if="element.type === 'DivisionLine'" class="divider my-0" />
-        <p v-else :class="textClassMap[element.type]">
+      <template
+        v-for="(element, index) in elements"
+        :key="index"
+      >
+        <div
+          v-if="element.type === 'DivisionLine'"
+          class="divider my-0"
+        />
+        <p
+          v-else
+          :class="textClassMap[element.type]"
+        >
           {{ element.text }}
         </p>
       </template>

@@ -35,30 +35,38 @@ const confirmSelection = () => {
 
 <template>
   <div>
-    <h1 class="text-3xl font-bold mb-6">Select Target Language</h1>
+    <h1 class="text-3xl font-bold mb-6">
+      Select Target Language
+    </h1>
 
-    <div v-if="isLoading" class="flex justify-center py-6">
-      <span class="loading loading-spinner loading-lg"></span>
+    <div
+      v-if="isLoading"
+      class="flex justify-center py-6"
+    >
+      <span class="loading loading-spinner loading-lg" />
     </div>
 
-    <div v-else class="flex flex-col gap-2 max-w-md">
+    <div
+      v-else
+      class="flex flex-col gap-2 max-w-md"
+    >
       <button
         v-for="lang in languages"
         :key="lang.iso"
-        @click="selectLanguage(lang.iso)"
         :class="[
           'btn btn-outline justify-start',
           selectedIso === lang.iso && 'btn-primary'
         ]"
+        @click="selectLanguage(lang.iso)"
       >
         <span class="text-2xl mr-2">{{ lang.short }}</span>
         <span>{{ lang.name }}</span>
       </button>
 
       <button
-        @click="confirmSelection"
         :disabled="!selectedIso"
         class="btn btn-primary mt-4"
+        @click="confirmSelection"
       >
         Continue
       </button>

@@ -284,3 +284,37 @@ Nothing in the props but an array of lucide icon names to be made buttons; no fu
 
 An extremely simple component taking only a `str` "content" prop.
 Point is to standardize how instructions are rendered.
+
+## Clarification Questions
+
+1. When determining whether a gloss is blocked in `useQueue`, do parts that are not in the current goal's `needToBeLearned` list (but exist in the repo) also block it, or should blocking only consider parts that are themselves scheduled to be learned?
+
+Situation practice only gets a specific per-situation repo of glosses. Glosses for any reason not in this repo should be completely ignored
+
+2. If `getDueGloss` would otherwise repeat the last practiced gloss because it's the only candidate left, should it break the "no immediate repeat" rule, or return `undefined` and end the practice mode?
+
+End practice mode
+
+3. What should `setGlossInvalid` do beyond skipping the gloss—should it mark the gloss as permanently done/ignored and should we surface any UI feedback when it happens?
+
+No special permanent treatment, emit a warning in console (not to the user) 
+
+4. For tasks that don't collect correctness (`Memorize*`, `FormSentence`, etc.), what value should be passed to `handleGlossScore`—always `true`, always `false`, or `undefined`?
+
+`undefined`
+
+5. When multiple translations or usage examples satisfy a task's prerequisites (e.g., several qualifying usage examples for `UnderstandNativeFromSentence`), should we pick one at random, prefer the first, or generate multiple tasks from the same gloss?
+
+random. btw, put randomness utils in a function in dumb/ and reuse
+
+6. After `ChallengeTryToExpress` / `ChallengeTryToUnderstand` completes, should the flow navigate back to the situations list, rerun the router for another goal, or stay on a completion screen?
+
+for now, simply back to situations list. Make a global toast system (cleanly, follow developer-guidelines) and add some friendly toast.
+
+7. If both `procedural-paraphrase-expression-goals` and `understand-expression-goals` are missing or empty for a situation, what should the Practice Router render (error state, redirect, or nothing)?
+
+Redirect to situations and warn with toast.
+
+8. Should we preload additional gloss refs from a goal's `references` array into the repo, or rely solely on the `.jsonl` gloss list for lookups?
+
+Rely on `jsonl`

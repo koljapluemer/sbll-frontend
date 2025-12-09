@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterView } from 'vue-router'
 import LanguageFooter from '@/features/language-footer/LanguageFooter.vue'
+import ToastContainer from '@/features/toast/ToastContainer.vue'
 </script>
 
 <template>
@@ -9,6 +10,7 @@ import LanguageFooter from '@/features/language-footer/LanguageFooter.vue'
       <RouterView />
     </main>
 
+    <ToastContainer />
     <LanguageFooter />
   </div>
 </template>
