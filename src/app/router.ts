@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import SituationsPage from '@/pages/situations/SituationsPage.vue'
 import SelectLanguagePage from '@/pages/select-language/SelectLanguagePage.vue'
-import PracticeRouter from '@/pages/situation-practice/PracticeRouter.vue'
 import { useLanguageStore } from '@/entities/language'
 
 const router = createRouter({
@@ -24,7 +23,7 @@ const router = createRouter({
     {
       path: '/situations/:situationId/practice',
       name: 'situation-practice',
-      component: PracticeRouter
+      component: () => import('@/pages/situation-practice/SituationPracticePage.vue')
     },
     {
       path: '/situations/:situationId/debug',

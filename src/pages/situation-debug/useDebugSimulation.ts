@@ -3,9 +3,24 @@ import { shuffleArray } from '@/dumb/random'
 import type { GlossIndex } from '@/entities/gloss/types'
 import { useQueue } from '../situation-practice/utils/useQueue'
 import { getTaskDefinition } from '../situation-practice/tasks/registry'
-import { getTaskTypesForMode } from '../situation-practice/modes/modeTaskConfig'
 import type { PracticeGoal, PracticeMode, StatefulGloss, TaskContext, TaskType } from '../situation-practice/types'
 import type { SimulatedTask } from './types'
+
+const getTaskTypesForMode = (mode: PracticeMode, state: 'novel' | 'practicing'): TaskType[] => {
+  if (mode === 'procedural') {
+    return state === 'novel'
+      ? ['MemorizeFromNative', 'UnderstandNativeFromSentence']
+      : ['FormSentence', 'RecallFromNative']
+  } else {
+    return state === 'novel'
+      ? ['MemorizeFromTarget', 'UnderstandTargetFromSentence']
+      : ['UnderstandSentenceAroundTargetGloss', 'RecallFromTarget']
+  }
+}
+
+const getFinalTaskType = (mode: PracticeMode): TaskType => {
+  return mode === 'procedural' ? 'ChallengeTryToExpress' : 'ChallengeTryToUnderstand'
+}
 
 const simulateTaskResult = (taskType: TaskType): boolean | undefined => {
   const selfAssessmentTasks: TaskType[] = [
@@ -55,8 +70,7 @@ export const useDebugSimulation = (
     mode: PracticeMode,
     goal: PracticeGoal
   ): SimulatedTask | null => {
-    const config = getTaskTypesForMode(mode)
-    const finalType = config.finalTaskType
+    const finalType = getFinalTaskType(mode)
 
     const definition = getTaskDefinition(finalType)
     const taskData = definition.makeTask(goal.finalChallenge, glossIndex, taskContext)
@@ -78,7 +92,6 @@ export const useDebugSimulation = (
     simulatedTasks.value = []
 
     const queue = useQueue(goal.needToBeLearned ?? [], glossIndex)
-    const config = getTaskTypesForMode(mode)
 
     let iteration = 0
     const maxIterations = 1000
@@ -92,7 +105,7 @@ export const useDebugSimulation = (
         break
       }
 
-      const taskTypesList = nextGloss.state === 'novel' ? config.novelTaskTypes : config.practicingTaskTypes
+      const taskTypesList = getTaskTypesForMode(mode, nextGloss.state)
       const task = buildTaskForGloss(nextGloss, taskTypesList)
 
       if (!task) {
