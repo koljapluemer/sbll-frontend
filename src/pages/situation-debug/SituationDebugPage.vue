@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { RotateCw, ArrowLeft } from 'lucide-vue-next'
+import { RotateCw, ArrowLeft, Copy } from 'lucide-vue-next'
 import { parseJsonl } from '@/dumb/jsonl-utils'
 import { buildGlossIndex } from '@/entities/gloss/repository'
 import type { Gloss, GlossIndex } from '@/entities/gloss/types'
 import { useLanguageStore } from '@/entities/language'
-import type { SituationGoals, TaskContext } from '../situation-practice/types'
+import type { PracticeMode, SituationGoals, TaskContext } from '../situation-practice/types'
 import { useDebugSimulation } from './useDebugSimulation'
 import DebugTaskPreview from './DebugTaskPreview.vue'
 
@@ -19,6 +19,8 @@ const glossIndex = ref<GlossIndex>({})
 const isLoading = ref(true)
 
 const situationId = computed(() => String(route.params.situationId ?? ''))
+const mode = computed(() => route.params.mode as PracticeMode)
+const goalIndex = computed(() => Number(route.params.goalIndex))
 
 const dataBasePath = computed(() => {
   const targetIso = languageStore.targetIso
@@ -33,10 +35,30 @@ const taskContext = computed<TaskContext>(() => ({
 }))
 
 const simulatedTasks = ref<ReturnType<typeof useDebugSimulation>['simulatedTasks']['value']>([])
-const selectedMode = ref<ReturnType<typeof useDebugSimulation>['selectedMode']['value']>(null)
-const selectedGoal = ref<ReturnType<typeof useDebugSimulation>['selectedGoal']['value']>(null)
 
 let simulation: ReturnType<typeof useDebugSimulation> | null = null
+
+const simulationLog = computed(() => {
+  if (!simulatedTasks.value.length) return ''
+
+  return simulatedTasks.value.map((task, index) => {
+    const taskNum = task.glossRef ? `[Task ${index + 1}]` : '[Final]'
+    const gloss = task.glossRef || (simulation?.goal.finalChallenge ?? 'unknown')
+    const result = task.simulatedResult === undefined
+      ? 'undefined'
+      : task.simulatedResult.toString()
+
+    return `${taskNum} ${gloss} | ${task.taskType} | ${task.queueStateChange} | result: ${result}`
+  }).join('\n')
+})
+
+const copyLogToClipboard = async () => {
+  try {
+    await navigator.clipboard.writeText(simulationLog.value)
+  } catch (err) {
+    console.error('Failed to copy:', err)
+  }
+}
 
 const loadData = async () => {
   if (!dataBasePath.value) {
@@ -55,11 +77,17 @@ const loadData = async () => {
     glossIndex.value = buildGlossIndex(glosses)
 
     if (goals.value) {
-      simulation = useDebugSimulation(goals.value, glossIndex.value, taskContext.value)
-      simulation.runSimulation()
-      simulatedTasks.value = simulation.simulatedTasks.value
-      selectedMode.value = simulation.selectedMode.value
-      selectedGoal.value = simulation.selectedGoal.value
+      const goalArray = mode.value === 'procedural'
+        ? goals.value['procedural-paraphrase-expression-goals']
+        : goals.value['understand-expression-goals']
+
+      const goal = goalArray?.[goalIndex.value]
+
+      if (goal) {
+        simulation = useDebugSimulation(glossIndex.value, taskContext.value, mode.value, goal)
+        simulation.runSimulation()
+        simulatedTasks.value = simulation.simulatedTasks.value
+      }
     }
   } catch (error) {
     console.error('Failed to load debug data:', error)
@@ -72,13 +100,11 @@ const handleRegenerate = () => {
   if (simulation) {
     simulation.regenerate()
     simulatedTasks.value = simulation.simulatedTasks.value
-    selectedMode.value = simulation.selectedMode.value
-    selectedGoal.value = simulation.selectedGoal.value
   }
 }
 
 watch(
-  [() => route.params.situationId, () => languageStore.targetIso],
+  [() => route.params.situationId, () => route.params.mode, () => route.params.goalIndex, () => languageStore.targetIso],
   loadData,
   { immediate: true }
 )
@@ -90,13 +116,13 @@ watch(
       <button
         class="btn btn-circle btn-ghost"
         type="button"
-        @click="router.push({ name: 'situations' })"
+        @click="router.push({ name: 'situation-debug', params: { situationId } })"
       >
         <ArrowLeft class="w-5 h-5" />
       </button>
 
       <h1 class="text-3xl font-bold">
-        Debug: {{ situationId }}
+        Debug: {{ situationId }} - {{ mode }} #{{ goalIndex + 1 }}
       </h1>
     </div>
 
@@ -126,7 +152,7 @@ watch(
                 Mode
               </div>
               <div class="font-semibold">
-                {{ selectedMode }}
+                {{ mode }}
               </div>
             </div>
 
@@ -154,6 +180,25 @@ watch(
           :simulated-task="task"
           :index="index"
         />
+      </div>
+
+      <div class="mt-8 flex flex-col gap-4">
+        <h2 class="text-2xl font-bold">
+          Simulation Log
+        </h2>
+
+        <div class="flex gap-2">
+          <button
+            class="btn btn-sm btn-outline gap-2"
+            type="button"
+            @click="copyLogToClipboard"
+          >
+            <Copy class="w-4 h-4" />
+            Copy to Clipboard
+          </button>
+        </div>
+
+        <pre class="border border-base-300 rounded p-4 overflow-x-auto text-xs font-mono bg-base-200">{{ simulationLog }}</pre>
       </div>
     </div>
   </div>

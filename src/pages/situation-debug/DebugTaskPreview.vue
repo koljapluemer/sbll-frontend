@@ -27,7 +27,10 @@ const resultIndicator = computed(() => {
       </div>
 
       <div class="flex items-center gap-2">
-        <component :is="resultIndicator.icon" :class="['w-4 h-4', resultIndicator.class]" />
+        <component
+          :is="resultIndicator.icon"
+          :class="['w-4 h-4', resultIndicator.class]"
+        />
         <span class="text-sm text-light">{{ resultIndicator.label }}</span>
       </div>
     </div>
@@ -37,11 +40,21 @@ const resultIndicator = computed(() => {
       <span class="ml-2 font-mono">{{ simulatedTask.queueStateChange }}</span>
     </div>
 
-    <div class="origin-top-left border-dashed border-yellow-600 max-h-52" style="transform: scale(0.3)">
-      <component :is="simulatedTask.component" :task="simulatedTask.taskData" @task-done="() => { }" />
+    <div
+      class="origin-top-left border-dashed border-yellow-600 max-h-52"
+      style="transform: scale(0.3)"
+    >
+      <component
+        :is="simulatedTask.component"
+        :task="simulatedTask.taskData"
+        @task-done="() => { }"
+      />
     </div>
 
-    <div v-if="simulatedTask.glossRef" class="text-xs text-light font-mono">
+    <div
+      v-if="simulatedTask.glossRef"
+      class="text-xs text-light font-mono"
+    >
       {{ simulatedTask.glossRef }}
     </div>
   </div>

@@ -1,14 +1,11 @@
 import { ref } from 'vue'
-import { pickRandom, shuffleArray } from '@/dumb/random'
+import { shuffleArray } from '@/dumb/random'
 import type { GlossIndex } from '@/entities/gloss/types'
 import { useQueue } from '../situation-practice/utils/useQueue'
 import { getTaskDefinition } from '../situation-practice/tasks/registry'
 import { getTaskTypesForMode } from '../situation-practice/modes/modeTaskConfig'
-import type { PracticeGoal, PracticeMode, SituationGoals, StatefulGloss, TaskContext, TaskType } from '../situation-practice/types'
+import type { PracticeGoal, PracticeMode, StatefulGloss, TaskContext, TaskType } from '../situation-practice/types'
 import type { SimulatedTask } from './types'
-
-const hasItems = <T>(items: T[]): items is [T, ...T[]] => items.length > 0
-const pickRandomOrFirst = <T>(items: [T, ...T[]]): T => pickRandom(items) ?? items[0]
 
 const simulateTaskResult = (taskType: TaskType): boolean | undefined => {
   const selfAssessmentTasks: TaskType[] = [
@@ -27,34 +24,12 @@ const simulateTaskResult = (taskType: TaskType): boolean | undefined => {
 }
 
 export const useDebugSimulation = (
-  goals: SituationGoals,
   glossIndex: GlossIndex,
-  taskContext: TaskContext
+  taskContext: TaskContext,
+  mode: PracticeMode,
+  goal: PracticeGoal
 ) => {
   const simulatedTasks = ref<SimulatedTask[]>([])
-  const selectedMode = ref<PracticeMode | null>(null)
-  const selectedGoal = ref<PracticeGoal | null>(null)
-
-  const chooseModeAndGoal = () => {
-    const proceduralGoals = goals['procedural-paraphrase-expression-goals'] ?? []
-    const understandGoals = goals['understand-expression-goals'] ?? []
-
-    const availableModes: PracticeMode[] = []
-    if (proceduralGoals.length) availableModes.push('procedural')
-    if (understandGoals.length) availableModes.push('understand')
-
-    if (!availableModes.length) return
-
-    if (!hasItems(availableModes)) return
-
-    const resolvedMode: PracticeMode = pickRandomOrFirst(availableModes)
-    selectedMode.value = resolvedMode
-
-    const goalPool = resolvedMode === 'procedural' ? proceduralGoals : understandGoals
-    if (!hasItems(goalPool)) return
-
-    selectedGoal.value = pickRandomOrFirst(goalPool)
-  }
 
   const buildTaskForGloss = (
     gloss: StatefulGloss,
@@ -101,12 +76,9 @@ export const useDebugSimulation = (
 
   const runSimulation = () => {
     simulatedTasks.value = []
-    chooseModeAndGoal()
 
-    if (!selectedGoal.value || !selectedMode.value) return
-
-    const queue = useQueue(selectedGoal.value.needToBeLearned ?? [], glossIndex)
-    const config = getTaskTypesForMode(selectedMode.value)
+    const queue = useQueue(goal.needToBeLearned ?? [], glossIndex)
+    const config = getTaskTypesForMode(mode)
 
     let iteration = 0
     const maxIterations = 1000
@@ -115,7 +87,7 @@ export const useDebugSimulation = (
       const nextGloss = queue.getDueGloss()
 
       if (!nextGloss) {
-        const finalTask = createFinalTask(selectedMode.value, selectedGoal.value)
+        const finalTask = createFinalTask(mode, goal)
         if (finalTask) simulatedTasks.value.push(finalTask)
         break
       }
@@ -155,8 +127,8 @@ export const useDebugSimulation = (
 
   return {
     simulatedTasks,
-    selectedMode,
-    selectedGoal,
+    mode,
+    goal,
     runSimulation,
     regenerate
   }

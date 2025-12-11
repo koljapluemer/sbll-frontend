@@ -29,6 +29,11 @@ const router = createRouter({
     {
       path: '/situations/:situationId/debug',
       name: 'situation-debug',
+      component: () => import('@/pages/situation-debug/SelectGoalPage.vue')
+    },
+    {
+      path: '/situations/:situationId/debug/:mode/:goalIndex',
+      name: 'situation-debug-sim',
       component: () => import('@/pages/situation-debug/SituationDebugPage.vue')
     }
   ]
