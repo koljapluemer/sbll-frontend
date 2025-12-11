@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { Bug } from 'lucide-vue-next'
 import { useLanguageStore } from '@/entities/language'
 
 type SituationCard = {
@@ -64,12 +65,20 @@ const hasSituations = computed(() => situations.value.length > 0)
           {{ situation.name }}
         </h2>
 
-        <RouterLink
-          :to="{ name: 'situation-practice', params: { situationId: situation.id } }"
-          class="btn btn-primary btn-sm mt-3 inline-flex items-center gap-2"
-        >
-          Practice
-        </RouterLink>
+        <div class="flex gap-2 mt-3">
+          <RouterLink
+            :to="{ name: 'situation-practice', params: { situationId: situation.id } }"
+            class="btn btn-primary btn-sm inline-flex items-center gap-2"
+          >
+            Practice
+          </RouterLink>
+          <RouterLink
+            :to="{ name: 'situation-debug', params: { situationId: situation.id } }"
+            class="btn btn-outline btn-sm inline-flex items-center gap-2"
+          >
+            <Bug class="w-4 h-4" />
+          </RouterLink>
+        </div>
       </div>
     </div>
   </div>

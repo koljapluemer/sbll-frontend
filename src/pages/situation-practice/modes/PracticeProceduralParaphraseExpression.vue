@@ -6,6 +6,7 @@ import { useLanguageStore } from '@/entities/language'
 import { useQueue } from '../utils/useQueue'
 import type { PracticeGoal, StatefulGloss, TaskContext, TaskType } from '../types'
 import { getTaskDefinition } from '../tasks/registry'
+import { getTaskTypesForMode } from './modeTaskConfig'
 
 const props = defineProps<{
   goal: PracticeGoal
@@ -23,9 +24,10 @@ const taskContext = computed<TaskContext>(() => ({
   targetIso: languageStore.targetIso ?? ''
 }))
 
-const novelTaskTypes: TaskType[] = ['MemorizeFromNative', 'UnderstandNativeFromSentence']
-const practicingTaskTypes: TaskType[] = ['FormSentence', 'RecallFromNative']
-const finalTaskType: TaskType = 'ChallengeTryToExpress'
+const config = getTaskTypesForMode('procedural')
+const novelTaskTypes = config.novelTaskTypes
+const practicingTaskTypes = config.practicingTaskTypes
+const finalTaskType = config.finalTaskType
 
 const queue = ref(useQueue(props.goal.needToBeLearned ?? [], props.glossIndex))
 const currentGloss = ref<StatefulGloss | null>(null)

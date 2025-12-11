@@ -25,6 +25,11 @@ const router = createRouter({
       path: '/situations/:situationId/practice',
       name: 'situation-practice',
       component: PracticeRouter
+    },
+    {
+      path: '/situations/:situationId/debug',
+      name: 'situation-debug',
+      component: () => import('@/pages/situation-debug/SituationDebugPage.vue')
     }
   ]
 })
