@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { formatDistanceToNow } from 'date-fns'
 import { useLanguageStore } from '@/entities/language'
-import { getLastPracticedDate, getPracticeStats } from '@/entities/practice-tracking/usePracticeTracking'
+import { usePracticeStore } from '@/entities/practice-tracking/practiceStore'
 
 type SituationCard = {
   id: string
@@ -12,16 +12,10 @@ type SituationCard = {
     proceduralParaphraseGoals: string[]
     understandGoals: string[]
   }
-  lastPracticed?: Date
-  progressStats?: {
-    platinum: number
-    gold: number
-    green: number
-    grey: number
-  }
 }
 
 const languageStore = useLanguageStore()
+const practiceStore = usePracticeStore()
 
 const situations = ref<SituationCard[]>([])
 const loading = ref(false)
@@ -67,44 +61,43 @@ async function loadSituations() {
   }
 }
 
-type GoalData = {
-  finalChallenge: string
-  needToBeLearned: string[]
-}
-
 type SituationGoalsData = {
-  'procedural-paraphrase-expression-goals'?: GoalData[]
-  'understand-expression-goals'?: GoalData[]
+  'procedural-paraphrase-expression-goals'?: string[]
+  'understand-expression-goals'?: string[]
 }
 
 async function loadSituationDetails(situationsList: SituationCard[], basePath: string) {
   for (const situation of situationsList) {
     try {
-      const response = await fetch(`${basePath}/${situation.id}.json`)
+      const encodedId = encodeURIComponent(situation.id)
+      const response = await fetch(`${basePath}/${encodedId}.json`)
       if (response.ok) {
         const data = await response.json() as SituationGoalsData
-        const proceduralGoals = (data['procedural-paraphrase-expression-goals'] || []).map((g) => g.finalChallenge)
-        const understandGoals = (data['understand-expression-goals'] || []).map((g) => g.finalChallenge)
+        const proceduralGoals = data['procedural-paraphrase-expression-goals'] || []
+        const understandGoals = data['understand-expression-goals'] || []
 
         situation.goals = {
           proceduralParaphraseGoals: proceduralGoals,
           understandGoals: understandGoals
-        }
-
-        // Compute practice tracking stats
-        const lastPracticed = getLastPracticedDate(situation.id)
-        if (lastPracticed) {
-          situation.lastPracticed = lastPracticed
-
-          // Get all goal identifiers
-          const allGoalIdentifiers = [...proceduralGoals, ...understandGoals]
-          situation.progressStats = getPracticeStats(allGoalIdentifiers)
         }
       }
     } catch (error) {
       console.error(`Failed to load details for ${situation.id}:`, error)
     }
   }
+}
+
+function getLastPracticed(situationId: string): Date | null {
+  return practiceStore.getLastPracticedDate(situationId)
+}
+
+function getProgressStats(situation: SituationCard) {
+  if (!situation.goals) return null
+  const allGoals = [
+    ...situation.goals.proceduralParaphraseGoals,
+    ...situation.goals.understandGoals
+  ]
+  return practiceStore.getPracticeStats(allGoals)
 }
 
 const hasSituations = computed(() => situations.value.length > 0)
@@ -166,36 +159,21 @@ watch([() => languageStore.nativeIso, () => languageStore.targetIso], () => {
       Situations
     </h1>
 
-    <div
-      v-if="!languageStore.targetIso"
-      class="alert alert-warning"
-    >
+    <div v-if="!languageStore.targetIso" class="alert alert-warning">
       Please select a target language first.
     </div>
 
-    <div
-      v-else-if="loading"
-      class="alert"
-    >
+    <div v-else-if="loading" class="alert">
       Loading situations...
     </div>
 
-    <div
-      v-else-if="!hasSituations"
-      class="alert"
-    >
+    <div v-else-if="!hasSituations" class="alert">
       No situations found for {{ languageStore.nativeIso }} → {{ languageStore.targetIso }}.
     </div>
 
-    <div
-      v-else
-      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-auto"
-    >
-      <RouterLink
-        v-for="situation in situations"
-        :key="situation.id"
-        :to="{ name: 'situation-practice', params: { situationId: situation.id } }"
-        :class="[
+    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-auto">
+      <RouterLink v-for="situation in situations" :key="situation.id"
+        :to="{ name: 'situation-practice', params: { situationId: situation.id } }" :class="[
           'card',
           'shadow',
           'bg-white',
@@ -203,50 +181,37 @@ watch([() => languageStore.nativeIso, () => languageStore.targetIso], () => {
           'transition-hover',
           'hover:shadow-md',
           'cursor-pointer',
-          situation.hasImage && situation.lastPracticed ? 'row-span-4' :
-          situation.hasImage && !situation.lastPracticed ? 'row-span-3' :
-          !situation.hasImage && situation.lastPracticed ? 'row-span-3' :
-          'row-span-2'
-        ]"
-      >
-        <figure
-          v-if="situation.hasImage"
-          class="h-48"
-        >
-          <img
-            :src="`/data/situations/${languageStore.nativeIso}/${languageStore.targetIso}/${situation.id}.webp`"
-            :alt="situation.name"
-            class="w-full h-full object-cover"
-          >
+          situation.hasImage && getLastPracticed(situation.id) ? 'row-span-4' :
+            situation.hasImage && !getLastPracticed(situation.id) ? 'row-span-3' :
+              !situation.hasImage && getLastPracticed(situation.id) ? 'row-span-3' :
+                'row-span-2'
+        ]">
+        <figure v-if="situation.hasImage" class="h-48">
+          <img :src="`/data/situations/${languageStore.nativeIso}/${languageStore.targetIso}/${situation.id}.webp`"
+            :alt="situation.name" class="w-full h-full object-cover">
         </figure>
-        <div class="card-body gap-2 text-center">
-          <h2 class="text-xl font-semibold">
-            {{ situation.name }}
-          </h2>
-
-          <div
-            v-if="situation.lastPracticed"
-            class="badge badge-sm"
-          >
-            last practiced {{ formatDistanceToNow(situation.lastPracticed, { addSuffix: true }) }}
+        <div class="card-body flex flex-col justify-between gap-2 text-center">
+          <div class="gap-2 flex flex-col">
+            <div v-if="getLastPracticed(situation.id)" class="badge badge-outline badge-sm">
+              last practiced {{ formatDistanceToNow(getLastPracticed(situation.id)!, { addSuffix: true }) }}
+            </div>
+            <h2 class="text-xl font-semibold">
+              {{ situation.name }}
+            </h2>
           </div>
 
-          <div
-            v-if="situation.progressStats"
-            class="flex gap-1 justify-center mt-2"
-          >
-            <div
-              v-for="(color, index) in getProgressCircles(situation.progressStats)"
-              :key="index"
-              :class="[
-                'w-3 h-3 rounded-full',
-                color === 'platinum' && 'bg-slate-300',
-                color === 'gold' && 'bg-yellow-500',
-                color === 'green' && 'bg-green-500',
-                color === 'grey' && 'bg-gray-300'
-              ]"
-            />
+
+          <div v-if="getLastPracticed(situation.id) && getProgressStats(situation)"
+            class="flex gap-1 justify-center mt-2">
+            <div v-for="(color, index) in getProgressCircles(getProgressStats(situation)!)" :key="index" :class="[
+              'w-3 h-3 rounded-full',
+              color === 'platinum' && 'bg-slate-300',
+              color === 'gold' && 'bg-yellow-500',
+              color === 'green' && 'bg-green-500',
+              color === 'grey' && 'bg-gray-300'
+            ]" />
           </div>
+
         </div>
       </RouterLink>
     </div>

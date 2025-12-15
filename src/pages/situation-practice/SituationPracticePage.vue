@@ -7,7 +7,7 @@ import { buildGlossIndex } from '@/entities/gloss/repository'
 import type { Gloss, GlossIndex } from '@/entities/gloss/types'
 import { useLanguageStore } from '@/entities/language'
 import { useToastStore } from '@/features/toast/toastStore'
-import { recordPractice, wasPracticedToday } from '@/entities/practice-tracking/usePracticeTracking'
+import { usePracticeStore } from '@/entities/practice-tracking/practiceStore'
 import { usePracticeState } from './state/usePracticeState'
 import type { PracticeMode, SituationGoals, StatefulGloss, TaskContext, TaskType, LearningState } from './types'
 import type { GlossRef } from '@/entities/gloss/types'
@@ -36,6 +36,7 @@ const route = useRoute()
 const router = useRouter()
 const languageStore = useLanguageStore()
 const toastStore = useToastStore()
+const practiceStore = usePracticeStore()
 
 const goals = ref<SituationGoals | null>(null)
 const selectedGoalRef = ref<GlossRef | null>(null)
@@ -120,11 +121,11 @@ const handleTaskDone = (rememberedCorrectly?: boolean) => {
   if (stage.value === 'final') {
     // Record practice for the goal
     if (selectedGoalRef.value) {
-      recordPractice(selectedGoalRef.value)
+      practiceStore.recordPractice(selectedGoalRef.value)
     }
     // Record practice for the situation itself
     if (situationId.value) {
-      recordPractice(situationId.value)
+      practiceStore.recordPractice(situationId.value)
     }
 
     toastStore.addToast('Practice complete. Nice work!', 'success')
@@ -181,7 +182,7 @@ const chooseModeAndGoal = () => {
   } else {
     // Filter goals not practiced today
     const notPracticedToday = goalPool.filter(
-      goalRef => !wasPracticedToday(goalRef)
+      goalRef => !practiceStore.wasPracticedToday(goalRef)
     )
 
     if (hasItems(notPracticedToday)) {
