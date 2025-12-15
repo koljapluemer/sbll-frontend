@@ -7,6 +7,7 @@ import { buildGlossIndex } from '@/entities/gloss/repository'
 import type { Gloss, GlossIndex } from '@/entities/gloss/types'
 import { useLanguageStore } from '@/entities/language'
 import { useToastStore } from '@/features/toast/toastStore'
+import { recordPractice, wasPracticedToday } from '@/entities/practice-tracking/usePracticeTracking'
 import { usePracticeState } from './state/usePracticeState'
 import type { PracticeGoal, PracticeMode, SituationGoals, StatefulGloss, TaskContext, TaskType, LearningState } from './types'
 import { getTaskDefinition } from './tasks/registry'
@@ -116,6 +117,15 @@ function requestNextTask() {
 
 const handleTaskDone = (rememberedCorrectly?: boolean) => {
   if (stage.value === 'final') {
+    // Record practice for the goal
+    if (selectedGoal.value) {
+      recordPractice(selectedGoal.value.finalChallenge)
+    }
+    // Record practice for the situation itself
+    if (situationId.value) {
+      recordPractice(situationId.value)
+    }
+
     toastStore.addToast('Practice complete. Nice work!', 'success')
     router.push({ name: 'situations' })
     return
@@ -162,7 +172,27 @@ const chooseModeAndGoal = () => {
     return
   }
 
-  selectedGoal.value = pickRandomOrFirst(goalPool)
+  // Smart goal selection based on practice history
+  let selectedFromPool: PracticeGoal
+
+  if (goalPool.length === 1) {
+    selectedFromPool = goalPool[0]
+  } else {
+    // Filter goals not practiced today
+    const notPracticedToday = goalPool.filter(
+      goal => !wasPracticedToday(goal.finalChallenge)
+    )
+
+    if (hasItems(notPracticedToday)) {
+      // Pick from unpracticed goals, avoiding the most recently practiced
+      selectedFromPool = pickRandomOrFirst(notPracticedToday)
+    } else {
+      // All practiced today, pick any (could add most-recently-practiced avoidance here too)
+      selectedFromPool = pickRandomOrFirst(goalPool)
+    }
+  }
+
+  selectedGoal.value = selectedFromPool
   practiceState.value = usePracticeState(
     selectedGoal.value.finalChallenge,
     resolvedMode,
