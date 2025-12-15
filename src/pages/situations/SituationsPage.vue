@@ -51,8 +51,8 @@ async function loadSituations() {
 
     situations.value = situationsList
 
-    // Load individual situation files asynchronously
-    loadSituationDetails(situationsList, basePath)
+    // Load individual situation files
+    await loadSituationDetails(situationsList, basePath)
   } catch (error) {
     console.error('Failed to load situations:', error)
     situations.value = []
