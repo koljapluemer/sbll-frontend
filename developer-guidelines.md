@@ -27,7 +27,6 @@ Do not use `index.ts` file reexporting components, simply export directly.
 - Keep files, functions and classes short, with a single purpose, on one abstraction layer. Split complex functionality when called for.
 - Do not hallucinate features I did not ask for
 - Keep copy and micro-copy short and to the point. Avoid waffling, avoid marketing speak, and avoid labelling everything with triple redundancy.
-- make sure UI looks neat. Always put a form input BELOW the label in a new line. Responsive design.
 
 ## UI Design
 

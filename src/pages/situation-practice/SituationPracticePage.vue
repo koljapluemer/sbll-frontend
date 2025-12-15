@@ -7,20 +7,20 @@ import { buildGlossIndex } from '@/entities/gloss/repository'
 import type { Gloss, GlossIndex } from '@/entities/gloss/types'
 import { useLanguageStore } from '@/entities/language'
 import { useToastStore } from '@/features/toast/toastStore'
-import { useQueue } from './utils/useQueue'
-import type { PracticeGoal, PracticeMode, SituationGoals, StatefulGloss, TaskContext, TaskType } from './types'
+import { usePracticeState } from './state/usePracticeState'
+import type { PracticeGoal, PracticeMode, SituationGoals, StatefulGloss, TaskContext, TaskType, LearningState } from './types'
 import { getTaskDefinition } from './tasks/registry'
 
 const hasItems = <T>(items: T[]): items is [T, ...T[]] => items.length > 0
 const pickRandomOrFirst = <T>(items: [T, ...T[]]): T => pickRandom(items) ?? items[0]
 
-const getTaskTypesForMode = (mode: PracticeMode, state: 'novel' | 'practicing'): TaskType[] => {
+const getTaskTypesForMode = (mode: PracticeMode, state: LearningState): TaskType[] => {
   if (mode === 'procedural') {
-    return state === 'novel'
+    return state === 'VOCAB-TO-INTRODUCE'
       ? ['MemorizeFromNative', 'UnderstandNativeFromSentence']
       : ['FormSentence', 'RecallFromNative']
   } else {
-    return state === 'novel'
+    return state === 'VOCAB-TO-INTRODUCE'
       ? ['MemorizeFromTarget', 'UnderstandTargetFromSentence']
       : ['UnderstandSentenceAroundTargetGloss', 'RecallFromTarget']
   }
@@ -55,7 +55,7 @@ const taskContext = computed<TaskContext>(() => ({
   targetIso: languageStore.targetIso ?? ''
 }))
 
-const queue = ref<ReturnType<typeof useQueue> | null>(null)
+const practiceState = ref<ReturnType<typeof usePracticeState> | null>(null)
 const currentGloss = ref<StatefulGloss | null>(null)
 const currentTaskType = ref<TaskType | null>(null)
 const currentTaskData = ref<unknown>(null)
@@ -95,9 +95,9 @@ const buildTaskForGloss = (gloss: StatefulGloss): boolean => {
 }
 
 function requestNextTask() {
-  if (stage.value === 'final' || !queue.value || !selectedMode.value || !selectedGoal.value) return
+  if (stage.value === 'final' || !practiceState.value || !selectedMode.value || !selectedGoal.value) return
 
-  const nextGloss = queue.value.getDueGloss()
+  const nextGloss = practiceState.value.getDueGloss()
   if (!nextGloss) {
     stage.value = 'final'
     const finalType = getFinalTaskType(selectedMode.value)
@@ -109,7 +109,7 @@ function requestNextTask() {
 
   const built = buildTaskForGloss(nextGloss)
   if (!built) {
-    queue.value.setGlossInvalid(nextGloss.ref)
+    practiceState.value.setGlossInvalid(nextGloss.ref)
     requestNextTask()
   }
 }
@@ -121,12 +121,16 @@ const handleTaskDone = (rememberedCorrectly?: boolean) => {
     return
   }
 
-  if (!currentGloss.value || !queue.value) {
+  if (!currentGloss.value || !practiceState.value || !currentTaskType.value) {
     requestNextTask()
     return
   }
 
-  queue.value.handleGlossScore(currentGloss.value.ref, rememberedCorrectly)
+  practiceState.value.handleGlossCompletion(
+    currentGloss.value.ref,
+    currentTaskType.value,
+    rememberedCorrectly
+  )
   requestNextTask()
 }
 
@@ -159,7 +163,11 @@ const chooseModeAndGoal = () => {
   }
 
   selectedGoal.value = pickRandomOrFirst(goalPool)
-  queue.value = useQueue(selectedGoal.value.needToBeLearned ?? [], glossIndex.value)
+  practiceState.value = usePracticeState(
+    selectedGoal.value.finalChallenge,
+    resolvedMode,
+    glossIndex.value
+  )
   stage.value = 'practice'
   requestNextTask()
 }

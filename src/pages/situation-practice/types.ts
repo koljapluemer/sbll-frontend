@@ -1,4 +1,4 @@
-import type { GlossRef } from '@/entities/gloss/types'
+import type { GlossRef, GlossIndex } from '@/entities/gloss/types'
 
 export type PracticeGoal = {
   finalChallenge: GlossRef
@@ -12,9 +12,24 @@ export type SituationGoals = {
 
 export type PracticeMode = 'procedural' | 'understand'
 
+export type LearningState =
+  | 'VOCAB-BLOCKED'
+  | 'VOCAB-TO-INTRODUCE'
+  | 'VOCAB-TO-PRACTICE'
+  | 'FINAL-CHALLENGE'
+  | 'SENTENCE-TO-GUESS'
+  | 'DONE'
+
 export type StatefulGloss = {
   ref: GlossRef
-  state: 'novel' | 'practicing'
+  state: LearningState
+}
+
+export type GoalResolver = {
+  resolveTree(
+    goalGlossRef: GlossRef,
+    glossIndex: GlossIndex
+  ): Map<GlossRef, LearningState>
 }
 
 export type TaskType =

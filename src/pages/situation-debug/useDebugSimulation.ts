@@ -1,18 +1,18 @@
 import { ref } from 'vue'
 import { shuffleArray } from '@/dumb/random'
 import type { GlossIndex } from '@/entities/gloss/types'
-import { useQueue } from '../situation-practice/utils/useQueue'
+import { usePracticeState } from '../situation-practice/state/usePracticeState'
 import { getTaskDefinition } from '../situation-practice/tasks/registry'
-import type { PracticeGoal, PracticeMode, StatefulGloss, TaskContext, TaskType } from '../situation-practice/types'
+import type { PracticeGoal, PracticeMode, StatefulGloss, TaskContext, TaskType, LearningState } from '../situation-practice/types'
 import type { SimulatedTask } from './types'
 
-const getTaskTypesForMode = (mode: PracticeMode, state: 'novel' | 'practicing'): TaskType[] => {
+const getTaskTypesForMode = (mode: PracticeMode, state: LearningState): TaskType[] => {
   if (mode === 'procedural') {
-    return state === 'novel'
+    return state === 'VOCAB-TO-INTRODUCE'
       ? ['MemorizeFromNative', 'UnderstandNativeFromSentence']
       : ['FormSentence', 'RecallFromNative']
   } else {
-    return state === 'novel'
+    return state === 'VOCAB-TO-INTRODUCE'
       ? ['MemorizeFromTarget', 'UnderstandTargetFromSentence']
       : ['UnderstandSentenceAroundTargetGloss', 'RecallFromTarget']
   }
@@ -91,13 +91,13 @@ export const useDebugSimulation = (
   const runSimulation = () => {
     simulatedTasks.value = []
 
-    const queue = useQueue(goal.needToBeLearned ?? [], glossIndex)
+    const practiceState = usePracticeState(goal.finalChallenge, mode, glossIndex)
 
     let iteration = 0
     const maxIterations = 1000
 
     while (iteration < maxIterations) {
-      const nextGloss = queue.getDueGloss()
+      const nextGloss = practiceState.getDueGloss()
 
       if (!nextGloss) {
         const finalTask = createFinalTask(mode, goal)
@@ -109,16 +109,16 @@ export const useDebugSimulation = (
       const task = buildTaskForGloss(nextGloss, taskTypesList)
 
       if (!task) {
-        queue.setGlossInvalid(nextGloss.ref)
+        practiceState.setGlossInvalid(nextGloss.ref)
         continue
       }
 
       const simulatedResult = simulateTaskResult(task.taskType)
       const stateBefore = nextGloss.state
 
-      queue.handleGlossScore(nextGloss.ref, simulatedResult)
+      practiceState.handleGlossCompletion(nextGloss.ref, task.taskType, simulatedResult)
 
-      const stateAfter = queue.stateMap.value[nextGloss.ref] ?? 'done'
+      const stateAfter = practiceState.stateMap.value.get(nextGloss.ref) ?? 'DONE'
 
       simulatedTasks.value.push({
         id: `${nextGloss.ref}-${iteration}`,
