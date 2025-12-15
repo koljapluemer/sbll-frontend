@@ -1,53 +1,46 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import SituationsPage from '@/pages/situations/SituationsPage.vue'
-import SelectLanguagePage from '@/pages/select-language/SelectLanguagePage.vue'
-import { useLanguageStore } from '@/entities/language'
+import SelectNativeLanguagePage from '@/pages/select-native-language/SelectNativeLanguagePage.vue'
+import SelectTargetLanguagePage from '@/pages/select-target-language/SelectTargetLanguagePage.vue'
 
 const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
       path: '/',
-      redirect: '/situations'
+      redirect: '/learn'
     },
     {
-      path: '/select-language',
-      name: 'select-language',
-      component: SelectLanguagePage
+      path: '/learn',
+      name: 'select-native-language',
+      component: SelectNativeLanguagePage
     },
     {
-      path: '/situations',
+      path: '/learn/:nativeIso',
+      name: 'select-target-language',
+      component: SelectTargetLanguagePage
+    },
+    {
+      path: '/learn/:nativeIso/:targetIso',
       name: 'situations',
       component: SituationsPage
     },
     {
-      path: '/situations/:situationId/practice',
+      path: '/learn/:nativeIso/:targetIso/situations/:situationId/practice',
       name: 'situation-practice',
       component: () => import('@/pages/situation-practice/SituationPracticePage.vue')
     },
     {
-      path: '/situations/:situationId/debug',
+      path: '/learn/:nativeIso/:targetIso/situations/:situationId/debug',
       name: 'situation-debug',
       component: () => import('@/pages/situation-debug/SelectGoalPage.vue')
     },
     {
-      path: '/situations/:situationId/debug/:mode/:goalIndex',
+      path: '/learn/:nativeIso/:targetIso/situations/:situationId/debug/:mode/:goalIndex',
       name: 'situation-debug-sim',
       component: () => import('@/pages/situation-debug/SituationDebugPage.vue')
     }
   ]
-})
-
-router.beforeEach((to, _from, next) => {
-  const languageStore = useLanguageStore()
-
-  if (!languageStore.hasTargetLanguage && to.path !== '/select-language') {
-    next('/select-language')
-  } else if (languageStore.hasTargetLanguage && to.path === '/select-language') {
-    next('/situations')
-  } else {
-    next()
-  }
 })
 
 export default router

@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { formatDistanceToNow } from 'date-fns'
-import { useLanguageStore } from '@/entities/language'
+import { RouterLink, useRoute } from 'vue-router'
+import { getLanguageInfo, type LanguageInfo } from '@/entities/language'
 import { usePracticeStore } from '@/entities/practice-tracking/practiceStore'
 
 type SituationCard = {
@@ -14,21 +15,33 @@ type SituationCard = {
   }
 }
 
-const languageStore = useLanguageStore()
+const route = useRoute()
 const practiceStore = usePracticeStore()
 
+const nativeIso = computed(() => route.params.nativeIso as string)
+const targetIso = computed(() => route.params.targetIso as string)
+
+const nativeLanguage = ref<LanguageInfo | null>(null)
+const targetLanguage = ref<LanguageInfo | null>(null)
 const situations = ref<SituationCard[]>([])
 const loading = ref(false)
 
+async function loadLanguageDetails() {
+  try {
+    nativeLanguage.value = await getLanguageInfo(nativeIso.value)
+    targetLanguage.value = await getLanguageInfo(targetIso.value)
+  } catch (error) {
+    console.error('Failed to load language details:', error)
+  }
+}
+
 async function loadSituations() {
-  const targetIso = languageStore.targetIso
-  if (!targetIso) {
+  if (!targetIso.value || !nativeIso.value) {
     situations.value = []
     return
   }
 
-  const nativeIso = languageStore.nativeIso
-  const basePath = `/data/situations/${nativeIso}/${targetIso}`
+  const basePath = `/data/situations/${nativeIso.value}/${targetIso.value}`
 
   try {
     loading.value = true
@@ -148,7 +161,8 @@ function getProgressCircles(stats: { platinum: number, gold: number, green: numb
 }
 
 // Watch for language changes and reload
-watch([() => languageStore.nativeIso, () => languageStore.targetIso], () => {
+watch([nativeIso, targetIso], () => {
+  loadLanguageDetails()
   loadSituations()
 }, { immediate: true })
 </script>
@@ -159,21 +173,30 @@ watch([() => languageStore.nativeIso, () => languageStore.targetIso], () => {
       Situations
     </h1>
 
-    <div v-if="!languageStore.targetIso" class="alert alert-warning">
-      Please select a target language first.
+    <div v-if="nativeLanguage && targetLanguage" class="mb-6">
+      <div class="flex gap-2 items-center flex-wrap">
+        <span class="text-light">You speak</span>
+        <RouterLink :to="`/learn`" class="font-semibold hover:underline">
+          {{ nativeLanguage.displayName }}
+        </RouterLink>
+        <span class="text-light">and you're learning</span>
+        <RouterLink :to="`/learn/${nativeIso}`" class="font-semibold hover:underline">
+          {{ targetLanguage.displayName }}
+        </RouterLink>
+      </div>
     </div>
 
-    <div v-else-if="loading" class="alert">
+    <div v-if="loading" class="alert">
       Loading situations...
     </div>
 
     <div v-else-if="!hasSituations" class="alert">
-      No situations found for {{ languageStore.nativeIso }} → {{ languageStore.targetIso }}.
+      No situations found for {{ nativeLanguage?.displayName || 'this language pair' }}.
     </div>
 
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-auto">
       <RouterLink v-for="situation in situations" :key="situation.id"
-        :to="{ name: 'situation-practice', params: { situationId: situation.id } }" :class="[
+        :to="{ name: 'situation-practice', params: { nativeIso, targetIso, situationId: situation.id } }" :class="[
           'card',
           'shadow',
           'bg-white',
@@ -187,7 +210,7 @@ watch([() => languageStore.nativeIso, () => languageStore.targetIso], () => {
                 'row-span-2'
         ]">
         <figure v-if="situation.hasImage" class="h-48">
-          <img :src="`/data/situations/${languageStore.nativeIso}/${languageStore.targetIso}/${situation.id}.webp`"
+          <img :src="`/data/situations/${nativeIso}/${targetIso}/${situation.id}.webp`"
             :alt="situation.name" class="w-full h-full object-cover">
         </figure>
         <div class="card-body flex flex-col justify-between gap-2 text-center">
