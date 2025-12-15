@@ -43,7 +43,7 @@ const simulationLog = computed(() => {
 
   return simulatedTasks.value.map((task, index) => {
     const taskNum = task.glossRef ? `[Task ${index + 1}]` : '[Final]'
-    const gloss = task.glossRef || (simulation?.goal.finalChallenge ?? 'unknown')
+    const gloss = task.glossRef || (simulation?.goalRef ?? 'unknown')
     const result = task.simulatedResult === undefined
       ? 'undefined'
       : task.simulatedResult.toString()

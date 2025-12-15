@@ -64,10 +64,6 @@ const textClass = (row: IndexCardRow) => {
   transition: transform 0.3s ease;
 }
 
-.card:hover {
-  transform: perspective(1000px) rotateX(2deg) rotateY(-2deg);
-}
-
 .card-flipped {
   animation: flipCard 0.4s ease;
 }

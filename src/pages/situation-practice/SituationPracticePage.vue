@@ -9,7 +9,8 @@ import { useLanguageStore } from '@/entities/language'
 import { useToastStore } from '@/features/toast/toastStore'
 import { recordPractice, wasPracticedToday } from '@/entities/practice-tracking/usePracticeTracking'
 import { usePracticeState } from './state/usePracticeState'
-import type { PracticeGoal, PracticeMode, SituationGoals, StatefulGloss, TaskContext, TaskType, LearningState } from './types'
+import type { PracticeMode, SituationGoals, StatefulGloss, TaskContext, TaskType, LearningState } from './types'
+import type { GlossRef } from '@/entities/gloss/types'
 import { getTaskDefinition } from './tasks/registry'
 
 const hasItems = <T>(items: T[]): items is [T, ...T[]] => items.length > 0
@@ -37,7 +38,7 @@ const languageStore = useLanguageStore()
 const toastStore = useToastStore()
 
 const goals = ref<SituationGoals | null>(null)
-const selectedGoal = ref<PracticeGoal | null>(null)
+const selectedGoalRef = ref<GlossRef | null>(null)
 const selectedMode = ref<PracticeMode | null>(null)
 const glossIndex = ref<GlossIndex>({})
 const isLoading = ref(true)
@@ -69,7 +70,7 @@ const activeComponent = computed(() => {
 })
 
 const activeTaskKey = computed(() => stage.value === 'final'
-  ? `final-${selectedGoal.value?.finalChallenge}`
+  ? `final-${selectedGoalRef.value}`
   : currentGloss.value?.ref ?? 'loading')
 
 const buildTaskForGloss = (gloss: StatefulGloss): boolean => {
@@ -96,15 +97,15 @@ const buildTaskForGloss = (gloss: StatefulGloss): boolean => {
 }
 
 function requestNextTask() {
-  if (stage.value === 'final' || !practiceState.value || !selectedMode.value || !selectedGoal.value) return
+  if (stage.value === 'final' || !practiceState.value || !selectedMode.value || !selectedGoalRef.value) return
 
   const nextGloss = practiceState.value.getDueGloss()
   if (!nextGloss) {
     stage.value = 'final'
     const finalType = getFinalTaskType(selectedMode.value)
     const finalDefinition = getTaskDefinition(finalType)
-    const taskData = finalDefinition.makeTask(selectedGoal.value.finalChallenge, glossIndex.value, taskContext.value)
-    currentTaskData.value = taskData ?? { gloss: glossIndex.value[selectedGoal.value.finalChallenge], translations: [] }
+    const taskData = finalDefinition.makeTask(selectedGoalRef.value, glossIndex.value, taskContext.value)
+    currentTaskData.value = taskData ?? { gloss: glossIndex.value[selectedGoalRef.value], translations: [] }
     return
   }
 
@@ -118,8 +119,8 @@ function requestNextTask() {
 const handleTaskDone = (rememberedCorrectly?: boolean) => {
   if (stage.value === 'final') {
     // Record practice for the goal
-    if (selectedGoal.value) {
-      recordPractice(selectedGoal.value.finalChallenge)
+    if (selectedGoalRef.value) {
+      recordPractice(selectedGoalRef.value)
     }
     // Record practice for the situation itself
     if (situationId.value) {
@@ -173,14 +174,14 @@ const chooseModeAndGoal = () => {
   }
 
   // Smart goal selection based on practice history
-  let selectedFromPool: PracticeGoal
+  let selectedFromPool: GlossRef
 
   if (goalPool.length === 1) {
     selectedFromPool = goalPool[0]
   } else {
     // Filter goals not practiced today
     const notPracticedToday = goalPool.filter(
-      goal => !wasPracticedToday(goal.finalChallenge)
+      goalRef => !wasPracticedToday(goalRef)
     )
 
     if (hasItems(notPracticedToday)) {
@@ -192,9 +193,9 @@ const chooseModeAndGoal = () => {
     }
   }
 
-  selectedGoal.value = selectedFromPool
+  selectedGoalRef.value = selectedFromPool
   practiceState.value = usePracticeState(
-    selectedGoal.value.finalChallenge,
+    selectedGoalRef.value,
     resolvedMode,
     glossIndex.value
   )
@@ -240,7 +241,7 @@ watch([() => route.params.situationId, () => languageStore.targetIso], loadData,
     </div>
 
     <div
-      v-else-if="!selectedGoal || !selectedMode"
+      v-else-if="!selectedGoalRef || !selectedMode"
       class="alert alert-warning"
     >
       Unable to start practice for this situation.

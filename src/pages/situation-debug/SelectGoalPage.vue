@@ -123,12 +123,9 @@ watch(
             @click="selectGoal('procedural', index)"
           >
             <div class="card-body">
-              <div class="flex items-center gap-2 mb-2">
+              <div class="flex items-center gap-2">
                 <span class="badge badge-primary">{{ index + 1 }}</span>
-                <span class="font-semibold">{{ getGlossDisplay(goal.finalChallenge) }}</span>
-              </div>
-              <div class="text-sm text-light">
-                {{ goal.needToBeLearned.length }} glosses to learn
+                <span class="font-semibold">{{ getGlossDisplay(goal) }}</span>
               </div>
             </div>
           </div>
@@ -151,12 +148,9 @@ watch(
             @click="selectGoal('understand', index)"
           >
             <div class="card-body">
-              <div class="flex items-center gap-2 mb-2">
+              <div class="flex items-center gap-2">
                 <span class="badge badge-primary">{{ index + 1 }}</span>
-                <span class="font-semibold">{{ getGlossDisplay(goal.finalChallenge) }}</span>
-              </div>
-              <div class="text-sm text-light">
-                {{ goal.needToBeLearned.length }} glosses to learn
+                <span class="font-semibold">{{ getGlossDisplay(goal) }}</span>
               </div>
             </div>
           </div>

@@ -1,13 +1,8 @@
 import type { GlossRef, GlossIndex } from '@/entities/gloss/types'
 
-export type PracticeGoal = {
-  finalChallenge: GlossRef
-  needToBeLearned: GlossRef[]
-}
-
 export type SituationGoals = {
-  'procedural-paraphrase-expression-goals'?: PracticeGoal[]
-  'understand-expression-goals'?: PracticeGoal[]
+  'procedural-paraphrase-expression-goals'?: GlossRef[]
+  'understand-expression-goals'?: GlossRef[]
 }
 
 export type PracticeMode = 'procedural' | 'understand'

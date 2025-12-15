@@ -1,9 +1,9 @@
 import { ref } from 'vue'
 import { shuffleArray } from '@/dumb/random'
-import type { GlossIndex } from '@/entities/gloss/types'
+import type { GlossIndex, GlossRef } from '@/entities/gloss/types'
 import { usePracticeState } from '../situation-practice/state/usePracticeState'
 import { getTaskDefinition } from '../situation-practice/tasks/registry'
-import type { PracticeGoal, PracticeMode, StatefulGloss, TaskContext, TaskType, LearningState } from '../situation-practice/types'
+import type { PracticeMode, StatefulGloss, TaskContext, TaskType, LearningState } from '../situation-practice/types'
 import type { SimulatedTask } from './types'
 
 const getTaskTypesForMode = (mode: PracticeMode, state: LearningState): TaskType[] => {
@@ -42,7 +42,7 @@ export const useDebugSimulation = (
   glossIndex: GlossIndex,
   taskContext: TaskContext,
   mode: PracticeMode,
-  goal: PracticeGoal
+  goalRef: GlossRef
 ) => {
   const simulatedTasks = ref<SimulatedTask[]>([])
 
@@ -68,17 +68,17 @@ export const useDebugSimulation = (
 
   const createFinalTask = (
     mode: PracticeMode,
-    goal: PracticeGoal
+    goalRef: GlossRef
   ): SimulatedTask | null => {
     const finalType = getFinalTaskType(mode)
 
     const definition = getTaskDefinition(finalType)
-    const taskData = definition.makeTask(goal.finalChallenge, glossIndex, taskContext)
+    const taskData = definition.makeTask(goalRef, glossIndex, taskContext)
 
     if (!taskData) return null
 
     return {
-      id: `final-${goal.finalChallenge}`,
+      id: `final-${goalRef}`,
       taskType: finalType,
       taskData,
       glossRef: null,
@@ -91,7 +91,7 @@ export const useDebugSimulation = (
   const runSimulation = () => {
     simulatedTasks.value = []
 
-    const practiceState = usePracticeState(goal.finalChallenge, mode, glossIndex)
+    const practiceState = usePracticeState(goalRef, mode, glossIndex)
 
     let iteration = 0
     const maxIterations = 1000
@@ -100,7 +100,7 @@ export const useDebugSimulation = (
       const nextGloss = practiceState.getDueGloss()
 
       if (!nextGloss) {
-        const finalTask = createFinalTask(mode, goal)
+        const finalTask = createFinalTask(mode, goalRef)
         if (finalTask) simulatedTasks.value.push(finalTask)
         break
       }
@@ -141,7 +141,7 @@ export const useDebugSimulation = (
   return {
     simulatedTasks,
     mode,
-    goal,
+    goalRef,
     runSimulation,
     regenerate
   }
