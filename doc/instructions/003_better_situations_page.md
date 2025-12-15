@@ -1,0 +1,7 @@
+- let's make the [situations page](src/pages/situations/SituationsPage.vue) a bit nicer
+- align the visual of the situation cards more to the [index card](src/pages/situation-practice/elements/IndexCard.vue) (not literally copy or import the component, just sort of use the same design language)
+- hide the debug button
+- use the per-language-combination folder `situations.json` file (e.g. `public/data/situations/eng/arb/situations.json`) to know what situations we have instead of manually parsing the folder
+- then, async, resolve the situation's we're actually showing (as of now, all of them, but later we will have pagination). By "resolve" we mean load their individual .json files (e.g. `public/data/situations/eng/arb/ordering at the restaurant.json`) so we have access to their goals; why will be apparent later
+- note that there is a boolean in `public/data/situations/eng/arb/situations.json` per situation. If `true`, don't show the situation on a standard card, but on a daisy UI image card, with the image name being literally `$situation_filename.webp`
+- auto-place situation cards on a grid (with reasonable, responsively set col numbers), giving image cards 3 grid rows and non-image card 2 grid rows (for some variation)
