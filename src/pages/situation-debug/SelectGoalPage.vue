@@ -5,24 +5,23 @@ import { ArrowLeft } from 'lucide-vue-next'
 import { parseJsonl } from '@/dumb/jsonl-utils'
 import { buildGlossIndex } from '@/entities/gloss/repository'
 import type { Gloss, GlossIndex } from '@/entities/gloss/types'
-import { useLanguageStore } from '@/entities/language'
 import type { PracticeMode, SituationGoals } from '../situation-practice/types'
 
 const route = useRoute()
 const router = useRouter()
-const languageStore = useLanguageStore()
 
 const goals = ref<SituationGoals | null>(null)
 const glossIndex = ref<GlossIndex>({})
 const isLoading = ref(true)
 
 const situationId = computed(() => String(route.params.situationId ?? ''))
+const nativeIso = computed(() => String(route.params.nativeIso ?? ''))
+const targetIso = computed(() => String(route.params.targetIso ?? ''))
 
 const dataBasePath = computed(() => {
-  const targetIso = languageStore.targetIso
-  if (!targetIso) return null
+  if (!targetIso.value) return null
   const encodedId = encodeURIComponent(situationId.value)
-  return `/data/situations/${languageStore.nativeIso}/${targetIso}/${encodedId}`
+  return `/data/situations/${nativeIso.value}/${targetIso.value}/${encodedId}`
 })
 
 const proceduralGoals = computed(() => goals.value?.['procedural-paraphrase-expression-goals'] ?? [])
@@ -67,7 +66,7 @@ const getGlossDisplay = (glossRef: string) => {
 }
 
 watch(
-  [() => route.params.situationId, () => languageStore.targetIso],
+  [() => route.params.situationId, () => route.params.targetIso, () => route.params.nativeIso],
   loadData,
   { immediate: true }
 )

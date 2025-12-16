@@ -5,7 +5,6 @@ import { parseJsonl } from '@/dumb/jsonl-utils'
 import { pickRandom, shuffleArray } from '@/dumb/random'
 import { buildGlossIndex } from '@/entities/gloss/repository'
 import type { Gloss, GlossIndex } from '@/entities/gloss/types'
-import { useLanguageStore } from '@/entities/language'
 import { usePracticeStore } from '@/entities/practice-tracking/practiceStore'
 import { usePracticeState } from './state/usePracticeState'
 import type { PracticeMode, SituationGoals, StatefulGloss, TaskContext, TaskType, LearningState } from './types'
@@ -33,7 +32,6 @@ const getFinalTaskType = (mode: PracticeMode): TaskType => {
 
 const route = useRoute()
 const router = useRouter()
-const languageStore = useLanguageStore()
 const practiceStore = usePracticeStore()
 
 const goals = ref<SituationGoals | null>(null)
@@ -43,17 +41,18 @@ const glossIndex = ref<GlossIndex>({})
 const isLoading = ref(true)
 
 const situationId = computed(() => String(route.params.situationId ?? ''))
+const nativeIso = computed(() => String(route.params.nativeIso ?? ''))
+const targetIso = computed(() => String(route.params.targetIso ?? ''))
 
 const dataBasePath = computed(() => {
-  const targetIso = languageStore.targetIso
-  if (!targetIso) return null
+  if (!targetIso.value) return null
   const encodedId = encodeURIComponent(situationId.value)
-  return `/data/situations/${languageStore.nativeIso}/${targetIso}/${encodedId}`
+  return `/data/situations/${nativeIso.value}/${targetIso.value}/${encodedId}`
 })
 
 const taskContext = computed<TaskContext>(() => ({
-  nativeIso: languageStore.nativeIso,
-  targetIso: languageStore.targetIso ?? ''
+  nativeIso: nativeIso.value,
+  targetIso: targetIso.value
 }))
 
 const practiceState = ref<ReturnType<typeof usePracticeState> | null>(null)
@@ -208,7 +207,12 @@ const loadData = async () => {
   isLoading.value = true
   try {
     const [goalResponse, glosses] = await Promise.all([
-      fetch(`${dataBasePath.value}.json`).then(res => res.json() as Promise<SituationGoals>),
+      fetch(`${dataBasePath.value}.json`).then(async res => {
+        if (!res.ok) {
+          throw new Error(`Failed to fetch situation goals: ${res.status} ${res.statusText} for URL: ${dataBasePath.value}.json`)
+        }
+        return res.json() as Promise<SituationGoals>
+      }),
       parseJsonl<Gloss>(`${dataBasePath.value}.jsonl`)
     ])
 
@@ -223,7 +227,7 @@ const loadData = async () => {
   }
 }
 
-watch([() => route.params.situationId, () => languageStore.targetIso], loadData, { immediate: true })
+watch([() => route.params.situationId, () => route.params.targetIso, () => route.params.nativeIso], loadData, { immediate: true })
 </script>
 
 <template>

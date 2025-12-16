@@ -5,33 +5,32 @@ import { RotateCw, ArrowLeft, Copy } from 'lucide-vue-next'
 import { parseJsonl } from '@/dumb/jsonl-utils'
 import { buildGlossIndex } from '@/entities/gloss/repository'
 import type { Gloss, GlossIndex } from '@/entities/gloss/types'
-import { useLanguageStore } from '@/entities/language'
 import type { PracticeMode, SituationGoals, TaskContext } from '../situation-practice/types'
 import { useDebugSimulation } from './useDebugSimulation'
 import DebugTaskPreview from './DebugTaskPreview.vue'
 
 const route = useRoute()
 const router = useRouter()
-const languageStore = useLanguageStore()
 
 const goals = ref<SituationGoals | null>(null)
 const glossIndex = ref<GlossIndex>({})
 const isLoading = ref(true)
 
 const situationId = computed(() => String(route.params.situationId ?? ''))
+const nativeIso = computed(() => String(route.params.nativeIso ?? ''))
+const targetIso = computed(() => String(route.params.targetIso ?? ''))
 const mode = computed(() => route.params.mode as PracticeMode)
 const goalIndex = computed(() => Number(route.params.goalIndex))
 
 const dataBasePath = computed(() => {
-  const targetIso = languageStore.targetIso
-  if (!targetIso) return null
+  if (!targetIso.value) return null
   const encodedId = encodeURIComponent(situationId.value)
-  return `/data/situations/${languageStore.nativeIso}/${targetIso}/${encodedId}`
+  return `/data/situations/${nativeIso.value}/${targetIso.value}/${encodedId}`
 })
 
 const taskContext = computed<TaskContext>(() => ({
-  nativeIso: languageStore.nativeIso,
-  targetIso: languageStore.targetIso ?? ''
+  nativeIso: nativeIso.value,
+  targetIso: targetIso.value
 }))
 
 const simulatedTasks = ref<ReturnType<typeof useDebugSimulation>['simulatedTasks']['value']>([])
@@ -104,7 +103,7 @@ const handleRegenerate = () => {
 }
 
 watch(
-  [() => route.params.situationId, () => route.params.mode, () => route.params.goalIndex, () => languageStore.targetIso],
+  [() => route.params.situationId, () => route.params.mode, () => route.params.goalIndex, () => route.params.targetIso, () => route.params.nativeIso],
   loadData,
   { immediate: true }
 )
