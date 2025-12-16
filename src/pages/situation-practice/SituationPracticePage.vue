@@ -6,7 +6,6 @@ import { pickRandom, shuffleArray } from '@/dumb/random'
 import { buildGlossIndex } from '@/entities/gloss/repository'
 import type { Gloss, GlossIndex } from '@/entities/gloss/types'
 import { useLanguageStore } from '@/entities/language'
-import { useToastStore } from '@/features/toast/toastStore'
 import { usePracticeStore } from '@/entities/practice-tracking/practiceStore'
 import { usePracticeState } from './state/usePracticeState'
 import type { PracticeMode, SituationGoals, StatefulGloss, TaskContext, TaskType, LearningState } from './types'
@@ -35,7 +34,6 @@ const getFinalTaskType = (mode: PracticeMode): TaskType => {
 const route = useRoute()
 const router = useRouter()
 const languageStore = useLanguageStore()
-const toastStore = useToastStore()
 const practiceStore = usePracticeStore()
 
 const goals = ref<SituationGoals | null>(null)
@@ -128,7 +126,6 @@ const handleTaskDone = (rememberedCorrectly?: boolean) => {
       practiceStore.recordPractice(situationId.value)
     }
 
-    toastStore.addToast('Practice complete. Nice work!', 'success')
     router.push({ name: 'situations' })
     return
   }
@@ -157,7 +154,6 @@ const chooseModeAndGoal = () => {
   if (understandGoals.length) availableModes.push('understand')
 
   if (!availableModes.length) {
-    toastStore.addToast('No practice goals found for this situation.', 'warning')
     router.push({ name: 'situations' })
     return
   }
@@ -169,7 +165,6 @@ const chooseModeAndGoal = () => {
 
   const goalPool = resolvedMode === 'procedural' ? proceduralGoals : understandGoals
   if (!hasItems(goalPool)) {
-    toastStore.addToast('No practice goals found for this mode.', 'warning')
     router.push({ name: 'situations' })
     return
   }
@@ -222,7 +217,6 @@ const loadData = async () => {
     chooseModeAndGoal()
   } catch (error) {
     console.error('Failed to load practice data:', error)
-    toastStore.addToast('Could not load practice data.', 'error')
     router.push({ name: 'situations' })
   } finally {
     isLoading.value = false

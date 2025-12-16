@@ -51,8 +51,14 @@ watch(() => nativeIso.value, () => {
       Select Target Language
     </h1>
 
-    <div v-if="nativeLanguage" class="mb-6">
-      <RouterLink to="/learn" class="text-light hover:underline">
+    <div
+      v-if="nativeLanguage"
+      class="mb-6"
+    >
+      <RouterLink
+        to="/learn"
+        class="text-light hover:underline"
+      >
         ← Change native language
       </RouterLink>
       <div class="mt-2">
@@ -61,19 +67,31 @@ watch(() => nativeIso.value, () => {
       </div>
     </div>
 
-    <div v-if="loading" class="alert">
+    <div
+      v-if="loading"
+      class="alert"
+    >
       Loading languages...
     </div>
 
-    <div v-else-if="error" class="alert alert-warning">
+    <div
+      v-else-if="error"
+      class="alert alert-warning"
+    >
       Failed to load languages for this native language.
     </div>
 
-    <div v-else-if="targetLanguages.length === 0" class="alert">
+    <div
+      v-else-if="targetLanguages.length === 0"
+      class="alert"
+    >
       No target languages available for {{ nativeLanguage?.displayName || nativeIso }}.
     </div>
 
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div
+      v-else
+      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+    >
       <RouterLink
         v-for="lang in targetLanguages"
         :key="lang.iso"
@@ -81,8 +99,12 @@ watch(() => nativeIso.value, () => {
         class="card shadow bg-white text-gray-700 transition-hover hover:shadow-md cursor-pointer"
       >
         <div class="card-body gap-4 grid place-items-center text-center">
-          <div class="text-6xl">{{ lang.symbol }}</div>
-          <h2 class="text-2xl font-semibold">{{ lang.displayName }}</h2>
+          <div class="text-6xl">
+            {{ lang.symbol }}
+          </div>
+          <h2 class="text-2xl font-semibold">
+            {{ lang.displayName }}
+          </h2>
         </div>
       </RouterLink>
     </div>
