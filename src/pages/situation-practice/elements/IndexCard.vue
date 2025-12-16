@@ -29,7 +29,7 @@ const textClass = (row: IndexCardRow) => {
     const length = row.text.length
     if (length < 3) return 'text-7xl font-bold'
     if (length < 20) return 'text-5xl font-bold'
-    return 'text-2xl font-semibold'
+    return 'text-3xl font-semibold'
   }
 
   return 'text-xl'
