@@ -11,7 +11,8 @@ export const recursivelyResolveParts = (
   glossRef: GlossRef,
   glossIndex: GlossIndex,
   stateMap: Map<GlossRef, LearningState>,
-  visited = new Set<GlossRef>()
+  visited = new Set<GlossRef>(),
+  hasBeenPracticed?: (ref: GlossRef) => boolean
 ): void => {
   // Cycle detection
   if (visited.has(glossRef)) {
@@ -32,7 +33,15 @@ export const recursivelyResolveParts = (
 
   const parts = gloss.parts || []
 
-  if (parts.length === 0) {
+  // Check if gloss has been practiced before - skip blocking if so
+  if (hasBeenPracticed && hasBeenPracticed(glossRef)) {
+    stateMap.set(glossRef, 'VOCAB-TO-PRACTICE')
+
+    // Still process parts recursively (they might not be practiced)
+    for (const partRef of parts) {
+      recursivelyResolveParts(partRef, glossIndex, stateMap, visited, hasBeenPracticed)
+    }
+  } else if (parts.length === 0) {
     // No parts - ready to introduce
     stateMap.set(glossRef, 'VOCAB-TO-INTRODUCE')
   } else {
@@ -41,7 +50,7 @@ export const recursivelyResolveParts = (
 
     // Recursively process all parts
     for (const partRef of parts) {
-      recursivelyResolveParts(partRef, glossIndex, stateMap, visited)
+      recursivelyResolveParts(partRef, glossIndex, stateMap, visited, hasBeenPracticed)
     }
   }
 }

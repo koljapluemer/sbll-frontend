@@ -61,6 +61,9 @@ const currentTaskType = ref<TaskType | null>(null)
 const currentTaskData = ref<unknown>(null)
 const stage = ref<'practice' | 'final'>('practice')
 
+// Track completed FormSentence exercises for each gloss in this run
+const completedFormSentenceGlosses = ref<Set<GlossRef>>(new Set())
+
 const activeComponent = computed(() => {
   if (!selectedMode.value) return null
   const type = stage.value === 'final' ? getFinalTaskType(selectedMode.value) : currentTaskType.value
@@ -75,7 +78,16 @@ const buildTaskForGloss = (gloss: StatefulGloss): boolean => {
   if (!selectedMode.value) return false
 
   const taskTypes = getTaskTypesForMode(selectedMode.value, gloss.state)
-  const shuffled = shuffleArray(taskTypes)
+
+  // Filter out FormSentence if already completed for this gloss in this run
+  const availableTaskTypes = taskTypes.filter(taskType => {
+    if (taskType === 'FormSentence' && completedFormSentenceGlosses.value.has(gloss.ref)) {
+      return false
+    }
+    return true
+  })
+
+  const shuffled = shuffleArray(availableTaskTypes)
 
   for (const taskType of shuffled) {
     const definition = getTaskDefinition(taskType)
@@ -132,6 +144,11 @@ const handleTaskDone = (rememberedCorrectly?: boolean) => {
   if (!currentGloss.value || !practiceState.value || !currentTaskType.value) {
     requestNextTask()
     return
+  }
+
+  // Track completed FormSentence exercises
+  if (currentTaskType.value === 'FormSentence') {
+    completedFormSentenceGlosses.value.add(currentGloss.value.ref)
   }
 
   practiceState.value.handleGlossCompletion(
@@ -192,9 +209,14 @@ const chooseModeAndGoal = () => {
   practiceState.value = usePracticeState(
     selectedGoalRef.value,
     resolvedMode,
-    glossIndex.value
+    glossIndex.value,
+    practiceStore
   )
   stage.value = 'practice'
+
+  // Clear completed exercise tracking for new practice run
+  completedFormSentenceGlosses.value.clear()
+
   requestNextTask()
 }
 

@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { shuffleArray } from '@/dumb/random'
 import type { GlossIndex, GlossRef } from '@/entities/gloss/types'
+import { usePracticeStore } from '@/entities/practice-tracking/practiceStore'
 import { usePracticeState } from '../situation-practice/state/usePracticeState'
 import { getTaskDefinition } from '../situation-practice/tasks/registry'
 import type { PracticeMode, StatefulGloss, TaskContext, TaskType, LearningState } from '../situation-practice/types'
@@ -91,7 +92,8 @@ export const useDebugSimulation = (
   const runSimulation = () => {
     simulatedTasks.value = []
 
-    const practiceState = usePracticeState(goalRef, mode, glossIndex)
+    const practiceStore = usePracticeStore()
+    const practiceState = usePracticeState(goalRef, mode, glossIndex, practiceStore)
 
     let iteration = 0
     const maxIterations = 1000

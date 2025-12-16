@@ -23,7 +23,8 @@ export type StatefulGloss = {
 export type GoalResolver = {
   resolveTree(
     goalGlossRef: GlossRef,
-    glossIndex: GlossIndex
+    glossIndex: GlossIndex,
+    hasBeenPracticed?: (ref: GlossRef) => boolean
   ): Map<GlossRef, LearningState>
 }
 

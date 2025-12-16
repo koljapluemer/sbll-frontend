@@ -13,7 +13,11 @@ import { recursivelyResolveParts } from './baseResolver'
  */
 export const createUnderstandResolver = (): GoalResolver => {
   return {
-    resolveTree(goalGlossRef: GlossRef, glossIndex: GlossIndex): Map<GlossRef, LearningState> {
+    resolveTree(
+      goalGlossRef: GlossRef,
+      glossIndex: GlossIndex,
+      hasBeenPracticed?: (ref: GlossRef) => boolean
+    ): Map<GlossRef, LearningState> {
       const stateMap = new Map<GlossRef, LearningState>()
 
       // Mark root goal as FINAL-CHALLENGE (never appears in practice pool)
@@ -29,7 +33,7 @@ export const createUnderstandResolver = (): GoalResolver => {
       // Recursively process all parts of the root goal
       const parts = rootGloss.parts || []
       for (const partRef of parts) {
-        recursivelyResolveParts(partRef, glossIndex, stateMap)
+        recursivelyResolveParts(partRef, glossIndex, stateMap, undefined, hasBeenPracticed)
       }
 
       return stateMap

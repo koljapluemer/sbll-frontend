@@ -28,9 +28,21 @@ function isSameDayAsToday(dateString: string): boolean {
   return isSameDay(date, new Date())
 }
 
+function parseStreakRecord(value: string): { streak: number, datetime: string } | null {
+  const parts = value.split(':')
+  if (parts.length < 2) return null
+  const streakStr = parts[0]
+  if (!streakStr) return null
+  const streak = parseInt(streakStr, 10)
+  const datetime = parts.slice(1).join(':')
+  if (isNaN(streak)) return null
+  return { streak, datetime }
+}
+
 export const usePracticeStore = defineStore('practice-tracking', {
   state: () => ({
-    data: {} as PracticeData
+    data: {} as PracticeData,
+    glossStreaks: {} as Record<string, string> // "streak:datetime"
   }),
 
   actions: {
@@ -103,6 +115,54 @@ export const usePracticeStore = defineStore('practice-tracking', {
       }
 
       return { platinum, gold, green, grey }
+    },
+
+    updateGlossStreak(glossRef: string, rememberedCorrectly: boolean) {
+      const now = new Date()
+      const nowString = format(now, "yy-MM-dd'T'HH:mm")
+
+      const existing = this.glossStreaks[glossRef]
+
+      if (!existing) {
+        // First time practicing this gloss
+        this.glossStreaks[glossRef] = rememberedCorrectly
+          ? `1:${nowString}`
+          : `-1:${nowString}`
+      } else {
+        const parsed = parseStreakRecord(existing)
+        if (!parsed) {
+          // Invalid format, reset
+          this.glossStreaks[glossRef] = rememberedCorrectly
+            ? `1:${nowString}`
+            : `-1:${nowString}`
+        } else {
+          const currentStreak = parsed.streak
+
+          if (rememberedCorrectly) {
+            // Correct answer: increment positive streak or reset from negative
+            const newStreak = currentStreak > 0 ? currentStreak + 1 : 1
+            this.glossStreaks[glossRef] = `${newStreak}:${nowString}`
+          } else {
+            // Incorrect answer: decrement negative streak or reset from positive
+            const newStreak = currentStreak < 0 ? currentStreak - 1 : -1
+            this.glossStreaks[glossRef] = `${newStreak}:${nowString}`
+          }
+        }
+      }
+    },
+
+    getGlossStreak(glossRef: string): { streak: number, datetime: Date } | null {
+      const value = this.glossStreaks[glossRef]
+      if (!value) return null
+      const parsed = parseStreakRecord(value)
+      if (!parsed) return null
+      const date = parseDateString(parsed.datetime)
+      if (!date) return null
+      return { streak: parsed.streak, datetime: date }
+    },
+
+    hasBeenPracticed(glossRef: string): boolean {
+      return !!this.glossStreaks[glossRef]
     }
   },
 

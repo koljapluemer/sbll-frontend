@@ -173,30 +173,51 @@ watch([nativeIso, targetIso], () => {
       Situations
     </h1>
 
-    <div v-if="nativeLanguage && targetLanguage" class="mb-6">
+    <div
+      v-if="nativeLanguage && targetLanguage"
+      class="mb-6"
+    >
       <div class="flex gap-2 items-center flex-wrap">
         <span class="text-light">You speak</span>
-        <RouterLink :to="`/learn`" class="font-semibold hover:underline">
+        <RouterLink
+          :to="`/learn`"
+          class="font-semibold hover:underline"
+        >
           {{ nativeLanguage.displayName }}
         </RouterLink>
         <span class="text-light">and you're learning</span>
-        <RouterLink :to="`/learn/${nativeIso}`" class="font-semibold hover:underline">
+        <RouterLink
+          :to="`/learn/${nativeIso}`"
+          class="font-semibold hover:underline"
+        >
           {{ targetLanguage.displayName }}
         </RouterLink>
       </div>
     </div>
 
-    <div v-if="loading" class="alert">
+    <div
+      v-if="loading"
+      class="alert"
+    >
       Loading situations...
     </div>
 
-    <div v-else-if="!hasSituations" class="alert">
+    <div
+      v-else-if="!hasSituations"
+      class="alert"
+    >
       No situations found for {{ nativeLanguage?.displayName || 'this language pair' }}.
     </div>
 
-    <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-auto">
-      <RouterLink v-for="situation in situations" :key="situation.id"
-        :to="{ name: 'situation-practice', params: { nativeIso, targetIso, situationId: situation.id } }" :class="[
+    <div
+      v-else
+      class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-auto"
+    >
+      <RouterLink
+        v-for="situation in situations"
+        :key="situation.id"
+        :to="{ name: 'situation-practice', params: { nativeIso, targetIso, situationId: situation.id } }"
+        :class="[
           'card',
           'shadow',
           'bg-white',
@@ -205,35 +226,48 @@ watch([nativeIso, targetIso], () => {
           'hover:shadow-md',
           'cursor-pointer',
           situation.hasImage && getLastPracticed(situation.id) ? 'row-span-4' :
-            situation.hasImage && !getLastPracticed(situation.id) ? 'row-span-3' :
-              !situation.hasImage && getLastPracticed(situation.id) ? 'row-span-3' :
-                'row-span-2'
-        ]">
-        <figure v-if="situation.hasImage" class="h-48">
-          <img :src="`/data/situations/${nativeIso}/${targetIso}/${situation.id}.webp`" :alt="situation.name"
-            class="w-full h-full object-cover">
+          situation.hasImage && !getLastPracticed(situation.id) ? 'row-span-3' :
+          !situation.hasImage && getLastPracticed(situation.id) ? 'row-span-3' :
+          'row-span-2'
+        ]"
+      >
+        <figure
+          v-if="situation.hasImage"
+          class="h-48"
+        >
+          <img
+            :src="`/data/situations/${nativeIso}/${targetIso}/${situation.id}.webp`"
+            :alt="situation.name"
+            class="w-full h-full object-cover"
+          >
         </figure>
         <div class="card-body flex flex-col justify-between gap-2 text-center">
           <h2 class="text-xl font-semibold">
             {{ situation.name }}
           </h2>
 
-          <div v-if="getLastPracticed(situation.id) && getProgressStats(situation)" class="flex flex-col items-center gap-2">
+          <div
+            v-if="getLastPracticed(situation.id) && getProgressStats(situation)"
+            class="flex flex-col items-center gap-2"
+          >
             <div class="flex gap-1 justify-center mt-2">
-              <div v-for="(color, index) in getProgressCircles(getProgressStats(situation)!)" :key="index" :class="[
-                'w-3 h-3 rounded-full',
-                color === 'platinum' && 'bg-slate-300',
-                color === 'gold' && 'bg-yellow-500',
-                color === 'green' && 'bg-green-500',
-                color === 'grey' && 'bg-gray-300'
-              ]" />
+              <div
+                v-for="(color, index) in getProgressCircles(getProgressStats(situation)!)"
+                :key="index"
+                :class="[
+                  'w-3 h-3 rounded-full',
+                  color === 'platinum' && 'bg-slate-300',
+                  color === 'gold' && 'bg-yellow-500',
+                  color === 'green' && 'bg-green-500',
+                  color === 'grey' && 'bg-gray-300'
+                ]"
+              />
             </div>
 
             <div class="badge badge-outline badge-sm">
               last practiced {{ formatDistanceToNow(getLastPracticed(situation.id)!, { addSuffix: true }) }}
             </div>
           </div>
-
         </div>
       </RouterLink>
     </div>

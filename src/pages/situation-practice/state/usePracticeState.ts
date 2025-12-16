@@ -25,12 +25,17 @@ const COMPLETION_TASKS: TaskType[] = [
 export const usePracticeState = (
   goalRef: GlossRef,
   goalMode: PracticeMode,
-  glossIndex: GlossIndex
+  glossIndex: GlossIndex,
+  practiceStore: ReturnType<typeof import('@/entities/practice-tracking/practiceStore').usePracticeStore>
 ) => {
   // Initialize state map using appropriate resolver
   const resolver = getGoalResolver(goalMode)
   const stateMap = ref<Map<GlossRef, LearningState>>(
-    resolver.resolveTree(goalRef, glossIndex)
+    resolver.resolveTree(
+      goalRef,
+      glossIndex,
+      (ref) => practiceStore.hasBeenPracticed(ref)
+    )
   )
 
   // Track last gloss to prevent consecutive repeats
@@ -95,7 +100,11 @@ export const usePracticeState = (
 
       for (const [ref, state] of stateMap.value) {
         if (state === 'VOCAB-BLOCKED' && canUnblock(ref, glossIndex, stateMap.value)) {
-          stateMap.value.set(ref, 'VOCAB-TO-INTRODUCE')
+          // If previously practiced, go straight to VOCAB-TO-PRACTICE
+          const newState = practiceStore.hasBeenPracticed(ref)
+            ? 'VOCAB-TO-PRACTICE'
+            : 'VOCAB-TO-INTRODUCE'
+          stateMap.value.set(ref, newState)
           changed = true
         }
       }
@@ -110,6 +119,11 @@ export const usePracticeState = (
     taskType: TaskType,
     rememberedCorrectly?: boolean
   ): void => {
+    // Update streak if we have a result
+    if (rememberedCorrectly !== undefined) {
+      practiceStore.updateGlossStreak(glossRef, rememberedCorrectly)
+    }
+
     const currentState = stateMap.value.get(glossRef)
     if (!currentState) {
       return
