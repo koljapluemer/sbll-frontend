@@ -136,6 +136,8 @@ const handleTaskDone = (rememberedCorrectly?: boolean) => {
     if (situationId.value) {
       practiceStore.recordPractice(situationId.value)
     }
+    // Record lesson run for stats tracking
+    practiceStore.recordLessonRun(targetIso.value)
 
     router.push({ name: 'situations' })
     return

@@ -42,7 +42,8 @@ function parseStreakRecord(value: string): { streak: number, datetime: string } 
 export const usePracticeStore = defineStore('practice-tracking', {
   state: () => ({
     data: {} as PracticeData,
-    glossStreaks: {} as Record<string, string> // "streak:datetime"
+    glossStreaks: {} as Record<string, string>, // "streak:datetime"
+    lessonRuns: {} as Record<string, string> // "targetIso:date1,date2,date3,..."
   }),
 
   actions: {
@@ -163,6 +164,65 @@ export const usePracticeStore = defineStore('practice-tracking', {
 
     hasBeenPracticed(glossRef: string): boolean {
       return !!this.glossStreaks[glossRef]
+    },
+
+    recordLessonRun(targetIso: string) {
+      const today = format(new Date(), 'yy-MM-dd')
+      const existing = this.lessonRuns[targetIso]
+
+      if (!existing) {
+        this.lessonRuns[targetIso] = today
+      } else {
+        this.lessonRuns[targetIso] = `${existing},${today}`
+      }
+    },
+
+    getLessonRunsByDateRange(startDate: Date, endDate: Date): Record<string, Record<string, number>> {
+      const result: Record<string, Record<string, number>> = {}
+
+      for (const [targetIso, runString] of Object.entries(this.lessonRuns)) {
+        if (!runString) continue
+
+        const dates = runString.split(',')
+        for (const dateStr of dates) {
+          const date = parse(dateStr, 'yy-MM-dd', new Date())
+
+          if (date >= startDate && date <= endDate) {
+            const formattedDate = format(date, 'yyyy-MM-dd')
+            if (!result[formattedDate]) {
+              result[formattedDate] = {}
+            }
+            if (!result[formattedDate][targetIso]) {
+              result[formattedDate][targetIso] = 0
+            }
+            result[formattedDate][targetIso]++
+          }
+        }
+      }
+
+      return result
+    },
+
+    getLast14DaysChartData(): Array<{ date: string; runs: Record<string, number> }> {
+      const today = new Date()
+      const fourteenDaysAgo = new Date(today)
+      fourteenDaysAgo.setDate(today.getDate() - 13)
+
+      const runsByDate = this.getLessonRunsByDateRange(fourteenDaysAgo, today)
+
+      const result = []
+      for (let i = 0; i < 14; i++) {
+        const date = new Date(fourteenDaysAgo)
+        date.setDate(fourteenDaysAgo.getDate() + i)
+        const dateStr = format(date, 'yyyy-MM-dd')
+
+        result.push({
+          date: dateStr,
+          runs: runsByDate[dateStr] || {}
+        })
+      }
+
+      return result
     }
   },
 

@@ -11,6 +11,11 @@ const router = createRouter({
       redirect: '/learn'
     },
     {
+      path: '/stats',
+      name: 'stats',
+      component: () => import('@/pages/stats/StatsPage.vue')
+    },
+    {
       path: '/learn',
       name: 'select-native-language',
       component: SelectNativeLanguagePage
