@@ -11,20 +11,29 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'SBLL Frontend',
+        name: 'Situation-Based Language Learning',
         short_name: 'SBLL',
-        description: 'Language learning situations',
-        theme_color: '#ffffff',
+        description: 'Learn languages through real-world situations',
+        theme_color: '#7a29e9',
+        background_color: '#210b3f',
+        display: 'standalone',
+        start_url: '/',
         icons: [
           {
-            src: 'pwa-192x192.png',
+            src: 'android-chrome-192x192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: 'pwa-512x512.png',
+            src: 'android-chrome-512x512.png',
             sizes: '512x512',
             type: 'image/png'
+          },
+          {
+            src: 'android-chrome-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
           }
         ]
       }
