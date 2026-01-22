@@ -4,11 +4,11 @@ export type LanguageInfo = {
   symbol: string
 }
 
-let languageDataCache: Record<string, { displayName: string, symbol: string }> | null = null
+let languageDataCache: Record<string, { displayName: string, symbols: string[] }> | null = null
 
 export async function getLanguageInfo(iso: string): Promise<LanguageInfo> {
   if (!languageDataCache) {
-    languageDataCache = await fetch('/data/situations/languages.json')
+    languageDataCache = await fetch('/glosses4learning-language-reference/glosses4learning-language-reference/languages.json')
       .then(res => res.json())
   }
 
@@ -16,7 +16,7 @@ export async function getLanguageInfo(iso: string): Promise<LanguageInfo> {
   return {
     iso,
     displayName: data?.displayName || iso,
-    symbol: data?.symbol || ''
+    symbol: data?.symbols?.[0] || ''
   }
 }
 

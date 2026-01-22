@@ -1,3 +1,6 @@
 [submodule "public/data/situations"]
 	path = public/data/situations
 	url = git@github.com:koljapluemer/sbll-data.git
+[submodule "glosses4learning-language-reference"]
+	path = glosses4learning-language-reference
+	url = git@github.com:koljapluemer/glosses4learning-language-reference.git
